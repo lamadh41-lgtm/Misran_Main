@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>محرك مصران | Misram Engine - متجر المشاريع البرمجية</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="styles.css" rel="stylesheet">
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
+    <div class="container">
+      <a class="navbar-brand js-site-brand" href="index.html">
+        <i class="fas fa-ankh me-2"></i>محرك مصران
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link" href="projects.html">المشاريع</a></li>
+          <li class="nav-item"><a class="nav-link nav-engine-download" href="engine.html"><i class="fas fa-download me-1"></i>تحميل المحرك</a></li>
+          <li class="nav-item"><a class="nav-link" href="content.html"><i class="fas fa-play-circle me-1"></i>المحتوى</a></li>
+          <li class="nav-item"><a class="nav-link" href="index.html#about">عن المتجر</a></li>
+          <li class="nav-item"><a class="nav-link" href="support.html"><i class="fas fa-headset me-1"></i>الدعم <span class="nav-support-badge support-badge-dot d-none"></span></a></li>
+        </ul>
+        <div class="d-flex align-items-center gap-3" id="authArea">
+          <!-- Will be filled by JS -->
+          <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#loginModal">تسجيل الدخول</button>
+          <button class="btn btn-primary-custom btn-sm text-white" data-bs-toggle="modal" data-bs-target="#registerModal">إنشاء حساب</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-lg-7 hero-content">
+          <h1>محرك مصران<br><span style="font-weight:700;opacity:0.95">إبداع ذهبي بمعايير فرعونية</span></h1>
+          <p>
+            منصة مصرية فاخرة لبيع وشراء المشاريع والسكربتات والأصول الرقمية. ارفع إبداعك، فعّل عروضك، واستلم أرباحك بأمان.
+          </p>
+          <div class="d-flex flex-wrap gap-3">
+            <a href="projects.html" class="btn btn-light btn-hero">تصفح المشاريع</a>
+            <button class="btn btn-outline-light-custom btn-hero" data-bs-toggle="modal" data-bs-target="#registerModal">انضم إلينا الآن</button>
+          </div>
+        </div>
+        <div class="col-lg-5 d-none d-lg-block position-relative" style="height:400px;">
+          <div class="floating-card">
+            <i class="fas fa-file-code text-white fs-3"></i>
+            <div class="mt-2 text-white fw-bold">+ مشاريع برمجية</div>
+          </div>
+          <div class="floating-card">
+            <i class="fas fa-wallet text-white fs-3"></i>
+            <div class="mt-2 text-white fw-bold">دفع آمن وسريع</div>
+          </div>
+          <div class="floating-card">
+            <i class="fas fa-shield-alt text-white fs-3"></i>
+            <div class="mt-2 text-white fw-bold">موثوق 100%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About / Features -->
+  <section class="section" id="about">
+    <div class="container">
+      <h2 class="section-title">لماذا محرك مصران؟</h2>
+      <p class="section-subtitle">منصة مصرية متخصصة في بيع وشراء الأكواد والمشاريع البرمجية بكل سهولة وأمان</p>
+      <div class="row g-4">
+        <div class="col-md-4">
+          <div class="feature-card text-center">
+            <div class="feature-icon mx-auto"><i class="fas fa-upload"></i></div>
+            <h4>ارفع مشروعك بسهولة</h4>
+            <p class="text-muted">ارفع ملفاتك أو مجلدك البرمجي، أضف صورة مصغرة ووصف وسعر، وانشر خلال دقائق.</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="feature-card text-center">
+            <div class="feature-icon mx-auto"><i class="fas fa-money-bill-wave"></i></div>
+            <h4>استلم أرباحك مباشرة</h4>
+            <p class="text-muted">اختر طريقة الاستلام (فودافون كاش، اتصالات كاش، أورنج كاش، إنستاباي) واستلم بعد الموافقة.</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="feature-card text-center">
+            <div class="feature-icon mx-auto"><i class="fas fa-lock"></i></div>
+            <h4>آمن وموثوق</h4>
+            <p class="text-muted">نظام مراجعة يدوي لكل عملية شراء، وحماية كاملة لملفاتك وبياناتك.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Examples / CTA -->
+  <section class="section bg-white">
+    <div class="container text-center">
+      <h2 class="section-title">أمثلة من المشاريع</h2>
+      <p class="section-subtitle">هنا سيتم عرض أمثلة حقيقية من المشاريع المنشورة (سيتم ملؤها لاحقاً)</p>
+      <div class="row g-4 justify-content-center" id="exampleProjects">
+        <!-- Placeholder cards -->
+        <div class="col-md-4">
+          <div class="project-card">
+            <div class="project-thumb d-flex align-items-center justify-content-center bg-light">
+              <i class="fas fa-code fa-3x text-muted"></i>
+            </div>
+            <div class="project-body">
+              <div class="project-title">مشروع تجريبي 1</div>
+              <div class="text-muted small mb-2">وصف قصير للمشروع...</div>
+              <div class="project-price free">مجاني</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="project-card">
+            <div class="project-thumb d-flex align-items-center justify-content-center bg-light">
+              <i class="fas fa-laptop-code fa-3x text-muted"></i>
+            </div>
+            <div class="project-body">
+              <div class="project-title">مشروع تجريبي 2</div>
+              <div class="text-muted small mb-2">وصف قصير للمشروع...</div>
+              <div class="project-price">150 ج.م</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <a href="projects.html" class="btn btn-primary-custom text-white mt-4">عرض كل المشاريع</a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-dark text-white py-5 mt-5">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4 mb-4">
+          <h5 class="fw-bold">محرك مصران</h5>
+          <p class="text-white-50">منصة مصرية لبيع وشراء المشاريع البرمجية والسكربتات بأمان وسهولة.</p>
+        </div>
+        <div class="col-md-4 mb-4">
+          <h5 class="fw-bold">روابط مهمة</h5>
+          <ul class="list-unstyled">
+            <li><a href="privacy.html" class="text-white-50 text-decoration-none">سياسة الخصوصية</a></li>
+            <li><a href="terms.html" class="text-white-50 text-decoration-none">الشروط والأحكام</a></li>
+            <li><a href="support.html" class="text-white-50 text-decoration-none">الدعم والتواصل</a></li>
+          </ul>
+        </div>
+        <div class="col-md-4 mb-4">
+          <h5 class="fw-bold">تواصل معنا</h5>
+          <p class="text-white-50" id="devPhoneFooter">رقم المطور: سيتم إضافته لاحقاً</p>
+        </div>
+      </div>
+      <hr class="border-secondary">
+      <p class="text-center text-white-50 mb-0">© 2026 محرك مصران - جميع الحقوق محفوظة</p>
+    </div>
+  </footer>
+
+  <!-- Login Modal -->
+  <div class="modal fade" id="loginModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="fas fa-sign-in-alt me-2"></i>تسجيل الدخول</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="loginForm">
+            <div class="mb-3">
+              <label class="form-label">البريد الإلكتروني</label>
+              <input type="email" class="form-control" id="loginEmail" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">كلمة المرور</label>
+              <input type="password" class="form-control" id="loginPassword" required>
+            </div>
+            <button type="submit" class="btn btn-primary-custom text-white w-100">دخول</button>
+          </form>
+          <p class="text-center mt-3 mb-0">ليس لديك حساب؟ <a href="#" data-bs-toggle="modal" data-bs-target="#registerModal" data-bs-dismiss="modal">إنشاء حساب</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Register Modal -->
+  <div class="modal fade" id="registerModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="fas fa-user-plus me-2"></i>إنشاء حساب جديد</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="registerForm">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">الاسم الكامل *</label>
+                <input type="text" class="form-control" id="regName" required>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">البريد الإلكتروني *</label>
+                <input type="email" class="form-control" id="regEmail" required>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">رقم الهاتف *</label>
+                <input type="tel" class="form-control" id="regPhone" placeholder="01xxxxxxxxx" required>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">كلمة المرور *</label>
+                <input type="password" class="form-control" id="regPassword" required minlength="6">
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">تأكيد كلمة المرور *</label>
+              <input type="password" class="form-control" id="regPassword2" required>
+            </div>
+            <div class="form-check mb-2">
+              <input class="form-check-input" type="checkbox" id="agreePrivacy" required>
+              <label class="form-check-label" for="agreePrivacy">
+                أوافق على <a href="privacy.html" target="_blank">سياسة الخصوصية</a>
+              </label>
+            </div>
+            <div class="form-check mb-2">
+              <input class="form-check-input" type="checkbox" id="agreeTerms" required>
+              <label class="form-check-label" for="agreeTerms">
+                أوافق على <a href="terms.html" target="_blank">الشروط والأحكام</a>
+              </label>
+            </div>
+            <div class="form-check mb-3">
+              <input class="form-check-input" type="checkbox" id="agreeMarketing">
+              <label class="form-check-label" for="agreeMarketing">
+                أوافق على تلقي رسائل وإشعارات من المتجر (اختياري)
+              </label>
+            </div>
+            <button type="submit" class="btn btn-primary-custom text-white w-100">إنشاء الحساب</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upload Project Modal -->
+  <div class="modal fade" id="uploadModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="fas fa-cloud-upload-alt me-2"></i>شارك إبداعاتك - رفع مشروع</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="uploadForm">
+            <div class="mb-3">
+              <label class="form-label">اسم المشروع *</label>
+              <input type="text" class="form-control" id="projTitle" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">الوصف *</label>
+              <textarea class="form-control" id="projDesc" rows="4" required></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">رابط صورة مصغرة من جوجل درايف *</label>
+              <input type="url" class="form-control" id="projThumbLink" placeholder="https://drive.google.com/file/d/XXXX/view" required>
+              <small class="text-muted">ارفع الصورة على درايف → شارك → انسخ الرابط</small>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">رابط ملفات المشروع من جوجل درايف *</label>
+              <input type="url" class="form-control" id="projFilesLink" placeholder="https://drive.google.com/drive/folders/XXXX أو ملف ZIP" required>
+              <small class="text-muted">ارفع المجلد أو ملف ZIP على درايف وشاركه (أي شخص لديه الرابط)</small>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">نوع المنتج *</label>
+              <div class="d-flex gap-3">
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="projPricing" id="projPricingFreeIdx" value="free" checked>
+                  <label class="form-check-label" for="projPricingFreeIdx">مجاني</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="projPricing" id="projPricingPaidIdx" value="paid">
+                  <label class="form-check-label" for="projPricingPaidIdx">مدفوع</label>
+                </div>
+              </div>
+            </div>
+            <div class="mb-3" id="projPriceWrap" style="display:none;">
+              <label class="form-label">السعر (ج.م) *</label>
+              <input type="number" class="form-control" id="projPrice" min="0" step="any" value="0" placeholder="مثال: 50">
+            </div>
+            <div id="paymentFields" style="display:none;">
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">طريقة استلام الأرباح *</label>
+                  <select class="form-select" id="projPayMethod">
+                    <option value="">اختر...</option>
+                    <option value="vodafone">فودافون كاش</option>
+                    <option value="etisalat">اتصالات كاش</option>
+                    <option value="orange">أورنج كاش</option>
+                    <option value="we">وي كاش</option>
+                    <option value="instapay">إنستاباي</option>
+                  </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">رقم المحفظة / إنستاباي *</label>
+                  <input type="text" class="form-control" id="projPayNumber">
+                </div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">اسم صاحب المحفظة / الحساب *</label>
+                <input type="text" class="form-control" id="projPayName">
+              </div>
+              <div class="alert alert-info">
+                <i class="fas fa-info-circle me-1"></i>
+                سيتم خصم <strong>5%</strong> عمولة من سعر المنتج.
+                <a href="#" id="commissionTermsLink" class="text-primary fw-bold">الشروط</a>
+              </div>
+              <div id="commissionTermsText" class="alert alert-secondary d-none">
+                الشروط الخاصة بالعمولة سيتم إضافتها هنا من قبل المطور.
+              </div>
+            </div>
+            <div class="d-grid gap-2">
+              <button type="button" class="btn btn-primary-custom text-white" id="submitReviewBtn">
+                <i class="fas fa-paper-plane me-1"></i> إرسال المشروع للمراجعة
+              </button>
+              <button type="button" class="btn btn-outline-secondary" id="saveDraftBtn">
+                <i class="fas fa-save me-1"></i> حفظ المشروع
+              </button>
+            </div>
+            <p class="small text-muted mt-2 mb-0">بعد الإرسال للمراجعة لن تتمكن من التعديل. يمكنك الحفظ كمسودة أولاً.</p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast container -->
+  <div class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+
+  <!-- Loading overlay -->
+  <div class="spinner-overlay d-none" id="loadingOverlay">
+    <div class="spinner-border text-primary" style="width:3rem;height:3rem;"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

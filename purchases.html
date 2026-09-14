@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>مشترياتي | محرك مصران</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="styles.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
+    <div class="container">
+      <a class="navbar-brand js-site-brand" href="index.html"><i class="fas fa-ankh me-2"></i>محرك مصران</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link" href="projects.html">المشاريع</a></li>
+          <li class="nav-item"><a class="nav-link nav-engine-download" href="engine.html"><i class="fas fa-download me-1"></i>تحميل المحرك</a></li>
+          <li class="nav-item"><a class="nav-link" href="content.html"><i class="fas fa-play-circle me-1"></i>المحتوى</a></li>
+          <li class="nav-item"><a class="nav-link" href="index.html#about">عن المتجر</a></li>
+          <li class="nav-item"><a class="nav-link" href="support.html"><i class="fas fa-headset me-1"></i>الدعم <span class="nav-support-badge support-badge-dot d-none"></span></a></li>
+        </ul>
+        <div class="d-flex align-items-center gap-3" id="authArea"></div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container py-5">
+    <h2 class="section-title mb-4" style="text-align:right;">مشترياتي</h2>
+
+    <ul class="nav nav-tabs mb-4" id="purchasesTabs">
+      <li class="nav-item">
+        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#received">المستلمة</button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#pending">قيد المراجعة (Pending)</button>
+      </li>
+    </ul>
+
+    <div class="tab-content">
+      <div class="tab-pane fade show active" id="received">
+        <div id="receivedList" class="row g-3">
+          <div class="col-12 text-center text-muted py-4">جاري التحميل...</div>
+        </div>
+      </div>
+      <div class="tab-pane fade" id="pending">
+        <div id="pendingList" class="row g-3">
+          <div class="col-12 text-center text-muted py-4">جاري التحميل...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module">
+    import { auth, db, onAuthStateChanged, collection, query, where, getDocs, orderBy, limit, doc, getDoc } from './firebase.js';
+    import { showToast } from './app.js';
+    // getDriveDownloadUrl on window
+
+    function thumbUrl(snap, live) {
+      const s = snap || {};
+      if (s.thumbnailDirect) return s.thumbnailDirect;
+      if (s.thumbnail) {
+        const m = String(s.thumbnail).match(/\/d\/([a-zA-Z0-9_-]+)/) || String(s.thumbnail).match(/id=([a-zA-Z0-9_-]+)/);
+        if (m) return `https://drive.google.com/thumbnail?id=${m[1]}&sz=w500`;
+        return s.thumbnail;
+      }
+      if (live?.thumbnailDirect) return live.thumbnailDirect;
+      return 'https://via.placeholder.com/400x180?text=Project';
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        location.href = 'index.html';
+        return;
+      }
+
+      // الشبكة أصل — المحلي تابع (soft مرة كل جلسة). المشتريات لا تُمس عند حذف منتج.
+      const pKey = 'purchases:' + user.uid;
+      let allBuyDocs = [];
+      if (window.localCache?.softFetch) {
+        const r = await window.localCache.softFetch(pKey, async () => {
+          const snap = await getDocs(query(collection(db, 'purchases'), where('buyerId', '==', user.uid), limit(80)));
+          return snap.docs.map(d => ({ id: d.id, data: d.data() }));
+        }, { sessionFlag: 'soft:purchases:' + user.uid });
+        allBuyDocs = Array.isArray(r.data) ? r.data : [];
+      } else {
+        const pCached = window.localCache?.get(pKey);
+        if (Array.isArray(pCached) && pCached.length) allBuyDocs = pCached;
+        else {
+          const allBuySnap = await getDocs(query(collection(db, 'purchases'), where('buyerId', '==', user.uid), limit(80)));
+          allBuyDocs = allBuySnap.docs.map(d => ({ id: d.id, data: d.data() }));
+          try { window.localCache?.set(pKey, allBuyDocs); } catch(_){}
+        }
+      }
+      const allBuy = { docs: allBuyDocs.map(x => ({ id: x.id, data: () => x.data })) };
+      const receivedDocs = allBuy.docs.filter(d => ['approved', 'owned_free'].includes(d.data().status));
+      const pendingDocs = allBuy.docs.filter(d => ['pending', 'rejected'].includes(d.data().status));
+      const receivedEl = document.getElementById('receivedList');
+      const pendingEl = document.getElementById('pendingList');
+
+      if (receivedDocs.length === 0) {
+        receivedEl.innerHTML = '<div class="col-12 text-center text-muted py-4">لا توجد مشتريات مستلمة بعد</div>';
+      } else {
+        let html = '';
+        for (const d of receivedDocs) {
+          const p = d.data();
+          const snap = p.snapshot || {};
+          let live = null;
+          if (p.projectId) {
+            try {
+              const ps = await getDoc(doc(db, 'projects', p.projectId));
+              if (ps.exists()) live = ps.data();
+            } catch(e){}
+          }
+          const title = snap.title || live?.title || p.projectTitle || 'منتج';
+          const desc = (snap.description || live?.description || '').slice(0, 80);
+          const img = thumbUrl(snap, live);
+          const filesLink = snap.filesLink || (live && live.status !== 'deleted' ? live.filesLink : '');
+          const badge = p.status === 'owned_free'
+            ? '<span class="badge bg-primary position-absolute top-0 start-0 m-2">من المشتريات · مجاني</span>'
+            : '<span class="badge bg-success position-absolute top-0 start-0 m-2">من المشتريات</span>';
+          html += `
+            <div class="col-md-6 col-lg-4">
+              <div class="card h-100 shadow-sm position-relative overflow-hidden">
+                <div class="position-relative">
+                  <img src="${img}" class="card-img-top" style="height:160px;object-fit:cover;" onerror="this.src='https://via.placeholder.com/400x180?text=Project'">
+                  ${badge}
+                </div>
+                <div class="card-body">
+                  <h6 class="card-title">${title}</h6>
+                  <p class="small text-muted text-truncate">${desc}</p>
+                  <div class="small text-muted mb-2">ID: ${p.projectId || d.id}</div>
+                  ${filesLink
+                    ? `<a href="${(window.getDriveDownloadUrl ? window.getDriveDownloadUrl(filesLink) : filesLink)}" class="btn btn-sm btn-primary-custom text-white" download><i class="fas fa-download me-1"></i>تحميل</a>`
+                    : '<span class="text-muted small">لا يوجد رابط تحميل</span>'}
+                  ${p.projectId && live && live.status === 'active' ? `<a href="product.html?id=${p.projectId}" class="btn btn-sm btn-outline-secondary ms-1">عرض</a>` : ''}
+                </div>
+              </div>
+            </div>`;
+        }
+        receivedEl.innerHTML = html;
+      }
+
+      if (pendingDocs.length === 0) {
+        pendingEl.innerHTML = '<div class="col-12 text-center text-muted py-4">لا توجد طلبات قيد المراجعة</div>';
+      } else {
+        pendingEl.innerHTML = pendingDocs.map(d => {
+          const p = d.data();
+          const snap = p.snapshot || {};
+          const img = thumbUrl(snap, null);
+          const statusBadge = p.status === 'pending'
+            ? '<span class="badge bg-warning text-dark">قيد المراجعة</span>'
+            : '<span class="badge bg-danger">مرفوض</span>';
+          let extra = '';
+          if (p.status === 'rejected') {
+            extra = `<p class="text-danger small mt-2">السبب: ${p.rejectionReason || 'غير محدد'}</p>`;
+          }
+          return `
+            <div class="col-md-6 col-lg-4">
+              <div class="card h-100 shadow-sm">
+                <img src="${img}" class="card-img-top" style="height:140px;object-fit:cover;" onerror="this.src='https://via.placeholder.com/400x180?text=Project'">
+                <div class="card-body">
+                  <h6>${snap.title || p.projectTitle || '-'}</h6>
+                  <p class="mb-1">المبلغ: ${p.amount || 0} ج.م ${statusBadge}</p>
+                  ${extra}
+                </div>
+              </div>
+            </div>`;
+        }).join('');
+      }
+    });
+  </script>
+</body>
+</html>

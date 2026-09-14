@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لوحة تحكم متجر مصران | الأدمن</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+  <link href="styles.css" rel="stylesheet">
+  <style>
+    body { background: #f1f5f9; }
+    .admin-nav { background: #1e293b; }
+    .admin-nav .nav-link { color: #94a3b8; }
+    .admin-nav .nav-link.active, .admin-nav .nav-link:hover { color: white; background: #334155; }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-dark admin-nav">
+    <div class="container-fluid d-flex justify-content-between align-items-center">
+      <span class="navbar-brand fw-bold mb-0"><i class="fas fa-shield-alt me-2"></i>لوحة تحكم متجر مصران</span>
+      <div class="d-flex align-items-center gap-3">
+        <span class="text-white-50 small d-none d-md-inline" id="adminUserLabel"></span>
+        <a href="index.html" class="btn btn-outline-light btn-sm"><i class="fas fa-store me-1"></i>الرجوع للموقع</a>
+      </div>
+    </div>
+  </nav>
+  <div id="adminAccessDenied" class="d-none container py-5 text-center">
+    <div class="alert alert-danger d-inline-block">غير مصرح لك بالدخول إلى لوحة الأدمن. <a href="index.html">العودة للموقع</a></div>
+  </div>
+
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-2 p-0">
+        <div class="admin-sidebar">
+          <nav class="nav flex-column admin-nav-groups">
+            <a class="nav-link" href="#" data-section="adminProfile" data-role="general"><i class="fas fa-user-cog me-2"></i>الملف والحساب</a>
+            <div class="sidebar-group-title">عام</div>
+            <a class="nav-link active" href="#" data-section="dashboard" data-role="general"><i class="fas fa-tachometer-alt me-2"></i>لوحة التحكم</a>
+            <a class="nav-link" href="#" data-section="support" data-role="users"><i class="fas fa-headset me-2"></i>الدعم <span class="badge bg-danger nav-badge d-none" id="badge-support">0</span></a>
+            <a class="nav-link" href="#" data-section="news" data-role="general"><i class="fas fa-bullhorn me-2"></i>الأخبار</a>
+            <div class="sidebar-group-title">المستخدمون</div>
+            <a class="nav-link" href="#" data-section="users" data-role="users"><i class="fas fa-users me-2"></i>المستخدمون</a>
+            <a class="nav-link" href="#" data-section="banned" data-role="users"><i class="fas fa-ban me-2"></i>محظورون / محذوفون</a>
+            <div class="sidebar-group-title">المنتجات</div>
+            <a class="nav-link" href="#" data-section="reviews" data-role="products"><i class="fas fa-clipboard-check me-2"></i>قبول المراجعة <span class="badge bg-danger nav-badge d-none" id="badge-reviews">0</span></a>
+            <a class="nav-link" href="#" data-section="products" data-role="products"><i class="fas fa-box me-2"></i>كل المنتجات</a>
+            <a class="nav-link" href="#" data-section="myCreations" data-role="products"><i class="fas fa-paint-brush me-2"></i>إبداعاتي (المحرك)</a>
+            <a class="nav-link" href="#" data-section="addProject" data-role="products"><i class="fas fa-plus-circle me-2"></i>إضافة مشروع رسمي</a>
+            <div class="sidebar-group-title">المالية</div>
+            <a class="nav-link" href="#" data-section="orders" data-role="finance"><i class="fas fa-wallet me-2"></i>شحن الرصيد المطلوب <span class="badge bg-danger nav-badge d-none" id="badge-orders">0</span></a>
+            <a class="nav-link" href="#" data-section="addBalance" data-role="finance"><i class="fas fa-plus-circle me-2"></i>إضافة رصيد</a>
+            <a class="nav-link" href="#" data-section="sellerPayouts" data-role="finance"><i class="fas fa-money-bill-wave me-2"></i>إرسال أرباح التاجر</a>
+            <a class="nav-link" href="#" data-section="myEarningsHub" data-role="finance"><i class="fas fa-coins me-2"></i>أرباحي</a>
+            <a class="nav-link" href="#" data-section="usersEarnings" data-role="finance"><i class="fas fa-hand-holding-usd me-2"></i>أرباح المستخدمين</a>
+            <a class="nav-link" href="#" data-section="resetEarnings" data-role="finance"><i class="fas fa-undo me-2"></i>إعادة الربح</a>
+            <a class="nav-link" href="#" data-section="sponsoredAds" data-role="finance"><i class="fas fa-bullhorn me-2"></i>الإعلانات الممولة</a>
+            <div class="sidebar-group-title" data-role-group="owner">الإدارة</div>
+            <a class="nav-link" href="#" data-section="admins" data-role="owner"><i class="fas fa-user-shield me-2"></i>الإداريون</a>
+            <div class="sidebar-group-title">أدوات</div>
+            <a class="nav-link" href="#" data-section="idLookup" data-role="tools"><i class="fas fa-search me-2"></i>بحث بالـ ID</a>
+            <a class="nav-link" href="#" data-section="drive" data-role="tools"><i class="fab fa-google-drive me-2"></i>Drive</a>
+            <a class="nav-link" href="#" data-section="firebase" data-role="tools"><i class="fas fa-fire me-2"></i>Firebase</a>
+          </nav>
+        </div>
+      </div>
+      <div class="col-md-10 p-4">
+        <!-- Official profile -->
+        <div id="section-adminProfile" class="admin-section d-none">
+          <h3 class="mb-3"><i class="fas fa-user-cog me-2"></i>الملف والحساب</h3>
+
+          <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+              <h5 class="mb-3">حساب المحرك (الظهور للناس)</h5>
+              <div class="d-flex flex-wrap align-items-center gap-4 mb-3">
+                <div id="officialAvatarPreview" class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold"
+                  style="width:96px;height:96px;font-size:2rem;background:linear-gradient(135deg,#d4af37,#b8860b);overflow:hidden;">م</div>
+                <div>
+                  <h4 class="mb-1 d-flex align-items-center gap-2">
+                    محرك مصران
+                    <span class="badge bg-primary" title="حساب موثّق"><i class="fas fa-check-circle me-1"></i>موثّق</span>
+                  </h4>
+                  <p class="text-muted small mb-2">الاسم والصورة يظهران على منتجات المحرك وصفحة البائع الرسمية</p>
+                  <input type="file" id="officialPhotoInput" accept="image/*" class="d-none">
+                  <button type="button" class="btn btn-primary btn-sm" id="officialPhotoBtn"><i class="fas fa-camera me-1"></i>رفع / تغيير الصورة</button>
+                  <div class="form-text">المقاس المفضل: <strong>400 × 400</strong> بكسل</div>
+                </div>
+              </div>
+              <div class="mt-3">
+                <label class="form-label">الاسم الظاهر للناس *</label>
+                <input type="text" class="form-control" id="officialDisplayName" placeholder="مثال: محرك مصران" maxlength="60">
+                <div class="form-text">يظهر بجانب صورة الملف على المنتجات الرسمية</div>
+                <button type="button" class="btn btn-sm btn-outline-primary mt-2" id="saveOfficialNameBtn"><i class="fas fa-save me-1"></i>حفظ الاسم</button>
+              </div>
+              <div id="officialProfileMsg" class="small text-muted mt-2"></div>
+            </div>
+          </div>
+
+          <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+              <h5 class="mb-2">رسالة شحن الرصيد</h5>
+              <p class="small text-muted">تظهر للمستخدم عند الضغط على «شحن رصيد» مع زر التحويل</p>
+              <textarea class="form-control mb-2" id="topupMessageInput" rows="4" placeholder="مثال: حوّل على الرقم ... ثم ارفع صورة التحويل"></textarea>
+              <button type="button" class="btn btn-success btn-sm" id="saveTopupMessageBtn"><i class="fas fa-save me-1"></i>حفظ الرسالة</button>
+              <span id="topupMessageSaveMsg" class="small ms-2 text-muted"></span>
+            </div>
+          </div>
+
+          <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+              <h5 class="mb-2">تعديل عمولة مستخدم</h5>
+              <p class="small text-muted mb-3">
+                الافتراضي 5%. التعديل يطبّق على <strong>المبيعات الجديدة فقط</strong> من لحظة الحفظ — لا يُعاد حساب الأرباح القديمة.
+              </p>
+              <div class="row g-2 align-items-end">
+                <div class="col-md-5">
+                  <label class="form-label">بحث مستخدم (اسم / إيميل / ID)</label>
+                  <input type="text" class="form-control" id="commUserSearch" placeholder="اكتب للبحث...">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">المستخدم</label>
+                  <select class="form-select" id="commUserSelect"><option value="">— اختر —</option></select>
+                </div>
+                <div class="col-md-2">
+                  <label class="form-label">العمولة %</label>
+                  <input type="number" class="form-control" id="commUserPercent" min="0" max="100" step="0.1" value="5">
+                </div>
+                <div class="col-md-1">
+                  <button type="button" class="btn btn-primary w-100" id="saveUserCommBtn">حفظ</button>
+                </div>
+              </div>
+              <div id="commUserHint" class="small text-muted mt-2"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dashboard -->
+        <div id="section-dashboard" class="admin-section">
+          <h3 class="mb-2">لوحة التحكم</h3>
+          <p class="mb-3" id="fbConnStatus"><span class="text-muted">جاري التحقق من الاتصال...</span></p>
+          <div class="row g-3">
+            <div class="col-md-3"><div class="stat-card"><div class="stat-number" id="statUsers">-</div><div>المستخدمون</div></div></div>
+            <div class="col-md-3"><div class="stat-card"><div class="stat-number" id="statProducts">-</div><div>المنتجات</div></div></div>
+            <div class="col-md-3"><div class="stat-card"><div class="stat-number" id="statPending">-</div><div>طلبات معلقة</div></div></div>
+            <div class="col-md-3"><div class="stat-card"><div class="stat-number" id="statChats">-</div><div>منتجات محذوفة</div></div></div>
+          </div>
+        </div>
+
+        <!-- Orders -->
+        <div id="section-orders" class="admin-section d-none">
+          <h3 class="mb-4">شحن الرصيد المطلوب</h3>
+          <input type="search" class="form-control mb-3" id="ordersSearch" placeholder="بحث بالاسم أو الإيميل أو ID المستخدم...">
+          <div id="ordersList"></div>
+        </div>
+
+        <div id="section-addBalance" class="admin-section d-none">
+          <h3 class="mb-3"><i class="fas fa-plus-circle me-2"></i>إضافة رصيد لمستخدم</h3>
+          <div class="alert alert-info small">ابحث عن المستخدم بالاسم أو الإيميل أو ID، ثم أرسل الرصيد مع سبب يظهر في إشعاراته ويُسجَّل في سجل رصيده.</div>
+          <input type="search" class="form-control mb-3" id="addBalanceSearch" placeholder="بحث بالاسم أو الإيميل أو ID...">
+          <div id="addBalanceResults"><div class="text-muted small">اكتب للبحث عن مستخدم...</div></div>
+        </div>
+
+        <!-- مودال إرسال رصيد -->
+        <div class="modal fade" id="sendBalanceModal" tabindex="-1">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">إرسال رصيد</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body">
+                <p class="mb-2" id="sendBalanceUserLabel"></p>
+                <input type="hidden" id="sendBalanceUserId">
+                <div class="mb-3">
+                  <label class="form-label">الكمية (ج.م) *</label>
+                  <input type="number" class="form-control" id="sendBalanceAmount" min="0.01" step="0.01" placeholder="مثلاً 50">
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">السبب *</label>
+                  <textarea class="form-control" id="sendBalanceReason" rows="3" placeholder="يظهر للمستخدم في الإشعار وسجل الرصيد"></textarea>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-success" id="confirmSendBalanceBtn">تأكيد الإرسال</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Users -->
+        <div id="section-users" class="admin-section d-none">
+          <h3 class="mb-4">المستخدمون</h3>
+          <input type="text" class="form-control mb-3" id="userSearch" placeholder="بحث بالاسم أو الإيميل أو ID...">
+          <div id="usersList"></div>
+        </div>
+
+        <!-- Reviews -->
+        <div id="section-reviews" class="admin-section d-none">
+          <h3 class="mb-4">قبول المراجعة</h3>
+          <input type="search" class="form-control mb-3" id="reviewsSearch" placeholder="بحث بعنوان المنتج أو ID أو اسم البائع...">
+          <div id="reviewsList"></div>
+        </div>
+
+        <!-- Products -->
+        <div id="section-products" class="admin-section d-none">
+          <h3 class="mb-4">كل المنتجات</h3>
+          <h5 class="mt-3">منتجات المحرك (رسمي)</h5>
+          <input type="text" class="form-control mb-3" id="searchOfficial" placeholder="بحث في منتجات المحرك...">
+          <div id="officialProductsList" class="row g-3 mb-4"></div>
+          <h5 class="mt-4">منتجات المستخدمين</h5>
+          <input type="text" class="form-control mb-3" id="searchUsersProd" placeholder="بحث في منتجات المستخدمين...">
+          <div id="userProductsList" class="row g-3"></div>
+        </div>
+
+        <!-- Banned -->
+        <div id="section-banned" class="admin-section d-none">
+          <h3 class="mb-4">المحظورون والمحذوفون</h3>
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label">بحث في المحظورين</label>
+              <input type="text" class="form-control" id="bannedSearch" placeholder="اسم أو إيميل...">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">بحث في المحذوفين</label>
+              <input type="text" class="form-control" id="deletedSearch" placeholder="اسم أو إيميل...">
+            </div>
+          </div>
+          <div id="bannedList"></div>
+        </div>
+
+        <!-- Support -->
+        <div id="section-support" class="admin-section d-none">
+          <h3 class="mb-4">محادثات الدعم</h3>
+          <input type="search" class="form-control mb-3" id="supportSearch" placeholder="بحث باسم أو إيميل أو ID المستخدم...">
+          <div class="row">
+            <div class="col-md-4">
+              <div id="supportUsersList" class="list-group"></div>
+            </div>
+            <div class="col-md-8">
+              <div class="chat-box" id="adminChatBox" style="height:450px;"></div>
+              <div class="input-group mt-2">
+                <input type="text" class="form-control" id="adminChatInput" placeholder="رد على المستخدم...">
+                <button class="btn btn-primary" id="adminSendChat">إرسال</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add Official Project -->
+        <div id="section-addProject" class="admin-section d-none">
+          <h3 class="mb-4">إضافة مشروع رسمي (المحرك)</h3>
+          <div class="account-card">
+            <form id="adminUploadForm">
+              <div class="mb-3">
+                <label class="form-label">اسم المشروع *</label>
+                <input type="text" class="form-control" id="adminProjTitle" required placeholder="اسم المشروع">
+              </div>
+              <div class="mb-3">
+                <label class="form-label">الوصف *</label>
+                <textarea class="form-control" id="adminProjDesc" rows="4" required></textarea>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">صورة مصغرة *</label>
+                <div class="d-flex gap-2 align-items-start">
+                  <input type="file" class="form-control" id="adminProjThumbFile" accept="image/*" required>
+                  <button type="button" class="btn btn-outline-danger btn-sm flex-shrink-0 d-none" id="adminClearThumbBtn" title="حذف"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="form-text">المقاس المفضل للعرض: <strong>800 × 450</strong> (أو أي صورة — تُرفع على درايف تلقائيًا)</div>
+                <div id="adminThumbPreview" class="mt-2"></div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">صور إضافية (اختياري — حتى 12)</label>
+                <input type="file" class="form-control" id="adminProjExtraFiles" accept="image/*" multiple>
+                <div id="adminExtraPreview" class="d-flex flex-wrap gap-2 mt-2"></div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">ملف المشروع * (ZIP / RAR — ملف واحد)</label>
+                <div class="d-flex gap-2 align-items-start">
+                  <input type="file" class="form-control" id="adminProjFilesFile" accept=".zip,.rar,.7z,.tar,.gz,application/zip,application/x-zip-compressed,*/*" required>
+                  <button type="button" class="btn btn-outline-danger btn-sm flex-shrink-0 d-none" id="adminClearFilesBtn" title="حذف"><i class="fas fa-times"></i></button>
+                </div>
+                <div id="adminFilesPreview" class="mt-1 small text-success"></div>
+                <div class="progress mt-2 d-none" id="adminUploadProgressWrap" style="height:8px;">
+                  <div class="progress-bar" id="adminUploadProgressBar" style="width:0%"></div>
+                </div>
+                <div class="small text-muted" id="adminUploadProgressText"></div>
+              </div>
+              <!-- توافق: روابط مخفية لو حابب تلصق يدوي لاحقًا -->
+              <input type="hidden" id="adminProjThumbLink" value="">
+              <input type="hidden" id="adminProjFilesLink" value="">
+              <div class="mb-3" id="adminSaleWrap">
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="checkbox" id="adminSaleEnabled">
+                  <label class="form-check-label" for="adminSaleEnabled">تفعيل عرض مؤقت</label>
+                </div>
+                <div id="adminSaleFields" class="border rounded p-2 bg-light d-none">
+                  <div class="row g-2">
+                    <div class="col-md-4"><label class="form-label small">السعر الأصلي</label>
+                      <input type="number" class="form-control form-control-sm" id="adminOriginalPrice" min="0" step="any"></div>
+                    <div class="col-md-4"><label class="form-label small">المدة</label>
+                      <input type="number" class="form-control form-control-sm" id="adminSaleDuration" min="1" value="7"></div>
+                    <div class="col-md-4"><label class="form-label small">الوحدة</label>
+                      <select class="form-select form-select-sm" id="adminSaleUnit">
+                        <option value="hours">ساعات</option>
+                        <option value="days" selected>أيام</option>
+                        <option value="months">شهور</option>
+                      </select></div>
+                  </div>
+                </div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">الفلاتر * (1 إلى 20)</label>
+                <div id="adminProjCategoriesBox" class="row g-1" style="max-height:160px;overflow-y:auto;"></div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">نوع المنتج *</label>
+                <div class="d-flex gap-3">
+                  <div class="form-check"><input class="form-check-input" type="radio" name="adminPricing" id="adminPricingFree" value="free" checked><label class="form-check-label" for="adminPricingFree">مجاني</label></div>
+                  <div class="form-check"><input class="form-check-input" type="radio" name="adminPricing" id="adminPricingPaid" value="paid"><label class="form-check-label" for="adminPricingPaid">مدفوع</label></div>
+                </div>
+              </div>
+              <div class="mb-3" id="adminPriceWrap" style="display:none;">
+                <label class="form-label">السعر (ج.م) *</label>
+                <input type="number" class="form-control" id="adminProjPrice" min="0" step="any" value="0">
+              </div>
+              <div id="adminPaymentFields" style="display:none;">
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label">طريقة الاستلام</label>
+                    <select class="form-select" id="adminProjPayMethod">
+                      <option value="vodafone">فودافون كاش</option>
+                      <option value="etisalat">اتصالات كاش</option>
+                      <option value="orange">أورنج كاش</option>
+                      <option value="instapay">إنستاباي</option>
+                    </select>
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label">رقم المحفظة</label>
+                    <input type="text" class="form-control" id="adminProjPayNumber">
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">اسم صاحب الحساب</label>
+                  <input type="text" class="form-control" id="adminProjPayName">
+                </div>
+              </div>
+              <button type="submit" class="btn btn-primary-custom text-white">نشر كمشروع رسمي</button>
+            </form>
+          </div>
+        </div>
+<!-- News -->
+        <div id="section-news" class="admin-section d-none">
+          <h3 class="mb-4">الأخبار والإعلانات</h3>
+          <div class="card shadow-sm mb-3">
+            <div class="card-body">
+              <div class="mb-3">
+                <label class="form-label">نص الخبر الحالي</label>
+                <textarea class="form-control" id="newsText" rows="3" placeholder="اكتب الخبر هنا..."></textarea>
+              </div>
+              <div class="d-flex flex-wrap gap-2 mb-3">
+                <button type="button" class="btn btn-primary" id="publishNewsBtn"><i class="fas fa-paper-plane me-1"></i>نشر الخبر</button>
+                <button type="button" class="btn btn-success" id="activateNewsBtn"><i class="fas fa-check me-1"></i>تفعيل وضع الأخبار</button>
+                <button type="button" class="btn btn-outline-secondary" id="deactivateNewsBtn"><i class="fas fa-times me-1"></i>إلغاء التفعيل</button>
+              </div>
+              <div class="alert alert-info mb-0">
+                <strong>الخبر الحالي:</strong> <span id="currentNewsDisplay">لا يوجد</span>
+                <br><span class="small">الحالة: <span id="newsStatusBadge" class="badge bg-secondary">معطّل</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ID Lookup -->
+        <div id="section-idLookup" class="admin-section d-none">
+          <h3 class="mb-4">بحث بالـ ID</h3>
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <div class="input-group mb-3">
+                <input type="text" class="form-control" id="lookupIdInput" placeholder="الصق ID المنتج أو الإشعار أو الرسالة...">
+                <button type="button" class="btn btn-primary" id="lookupIdBtn">بحث</button>
+              </div>
+              <div id="lookupResult"></div>
+            </div>
+          </div>
+        </div>
+
+        
+        <div id="section-myCreations" class="admin-section d-none">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="mb-0">إبداعاتي (منتجات المحرك)</h3>
+            <button class="btn btn-primary btn-sm" id="adminMyCreationsRefresh"><i class="fas fa-sync me-1"></i>تحديث</button>
+          </div>
+          <p class="text-muted small">تعديل كامل بدون قيود زمنية على العروض — مثل صلاحيات المستخدم مع حرية الأدمن.</p>
+          <input type="search" class="form-control mb-3" id="adminMyCreationsSearch" placeholder="بحث بالعنوان أو ID المنتج...">
+          <div id="adminMyCreationsList" class="row g-3">
+            <div class="col-12 text-center py-4"><div class="spinner-border spinner-border-sm"></div></div>
+          </div>
+        </div>
+
+        <div id="section-myEarningsHub" class="admin-section d-none">
+          <h3 class="mb-3"><i class="fas fa-coins me-2"></i>أرباحي</h3>
+          <ul class="nav nav-pills mb-4 gap-2" id="earningsHubTabs">
+            <li class="nav-item"><button class="nav-link active" data-hub="commission">أرباح عمولاتي</button></li>
+            <li class="nav-item"><button class="nav-link" data-hub="creations">أرباح إبداعاتي</button></li>
+            <li class="nav-item"><button class="nav-link" data-hub="sponsored">أرباح الإعلانات الممولة</button></li>
+          </ul>
+
+          <!-- تبويب عمولاتي (نفس القديم) -->
+          <div id="hub-commission" class="earnings-hub-pane">
+            <div class="row g-3 mb-3">
+              <div class="col-md-3"><div class="stat-card text-center"><div class="stat-number text-success" id="commTotal">0</div><div>إجمالي أرباح العمولة</div></div></div>
+              <div class="col-md-3"><div class="stat-card text-center"><div class="stat-number" id="commSales">0</div><div>إجمالي المبيعات المصدر</div></div></div>
+              <div class="col-md-3"><div class="stat-card text-center"><div class="stat-number" id="commUsers">0</div><div>عدد البائعين</div></div></div>
+              <div class="col-md-3"><div class="stat-card text-center"><div class="stat-number" id="commProducts">0</div><div>عدد المنتجات المصدر</div></div></div>
+            </div>
+            <div class="card mb-3">
+              <div class="card-body">
+                <div class="row g-2 align-items-end">
+                  <div class="col-md-3"><label class="form-label">من تاريخ</label><input type="date" class="form-control" id="commFrom"></div>
+                  <div class="col-md-3"><label class="form-label">إلى تاريخ</label><input type="date" class="form-control" id="commTo"></div>
+                  <div class="col-md-3">
+                    <button class="btn btn-primary" id="commFilterBtn">تطبيق الفلتر</button>
+                    <button class="btn btn-outline-secondary" id="commClearBtn">مسح</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <h5 class="mb-2">تفاصيل حسب المنتج / البائع</h5>
+            <div id="commDetailsList"></div>
+          </div>
+
+          <!-- تبويب إبداعاتي -->
+          <div id="hub-creations" class="earnings-hub-pane d-none">
+            <div class="row g-3 mb-3">
+              <div class="col-md-4"><div class="stat-card text-center"><div class="stat-number" id="adminTotalGross">0</div><div>إجمالي الأرباح</div></div></div>
+              <div class="col-md-4"><div class="stat-card text-center"><div class="stat-number" id="adminTotalBuyers">0</div><div>إجمالي المشترين</div></div></div>
+              <div class="col-md-4">
+                <label class="form-label">من</label>
+                <input type="date" class="form-control mb-1" id="adminEarnFrom">
+                <label class="form-label">إلى</label>
+                <input type="date" class="form-control mb-1" id="adminEarnTo">
+                <button class="btn btn-sm btn-primary" id="adminEarnFilter">تطبيق</button>
+                <button class="btn btn-sm btn-outline-secondary" id="adminEarnClear">مسح</button>
+              </div>
+            </div>
+            <div id="adminEarningsList"></div>
+          </div>
+
+          <!-- تبويب أرباح الإعلانات الممولة -->
+          <div id="hub-sponsored" class="earnings-hub-pane d-none">
+            <div class="row g-3 mb-3">
+              <div class="col-md-4"><div class="stat-card text-center"><div class="stat-number text-success" id="sponsoredEarnTotal">0</div><div>إجمالي أرباح الإعلانات</div></div></div>
+              <div class="col-md-4"><div class="stat-card text-center"><div class="stat-number" id="sponsoredEarnCount">0</div><div>عدد الإعلانات المدفوعة</div></div></div>
+            </div>
+            <input type="search" class="form-control mb-3" id="sponsoredEarnSearch" placeholder="بحث بالمنتج أو ID أو userId...">
+            <div id="sponsoredEarnList"><div class="text-muted">افتح التبويب لتحميل السجل...</div></div>
+          </div>
+        </div>
+
+        <!-- قسم إدارة الإعلانات الممولة (قائمة + إلغاء مع استرجاع) -->
+        <div id="section-sponsoredAds" class="admin-section d-none">
+          <h3 class="mb-3"><i class="fas fa-bullhorn me-2"></i>الإعلانات الممولة</h3>
+          <div class="d-flex flex-wrap gap-2 mb-3">
+            <input type="search" class="form-control" style="max-width:320px" id="sponsoredAdsSearch" placeholder="بحث بالـ ID أو المنتج أو المستخدم...">
+            <select class="form-select" style="max-width:180px" id="sponsoredAdsStatus">
+              <option value="active">نشطة فقط</option>
+              <option value="all">الكل</option>
+              <option value="cancelled_by_user">ملغاة من المستخدم</option>
+              <option value="cancelled_by_admin">ملغاة من الأدمن</option>
+              <option value="expired">منتهية</option>
+            </select>
+            <button class="btn btn-outline-primary" id="sponsoredAdsRefresh"><i class="fas fa-sync me-1"></i>تحديث</button>
+          </div>
+          <div id="sponsoredAdsList"><div class="text-muted">جاري التحميل عند فتح القسم...</div></div>
+          <div class="d-flex justify-content-between align-items-center mt-3">
+            <button class="btn btn-sm btn-outline-secondary" id="sponsoredAdsPrev" disabled>السابق</button>
+            <span class="small text-muted" id="sponsoredAdsPageInfo"></span>
+            <button class="btn btn-sm btn-outline-secondary" id="sponsoredAdsNext" disabled>التالي</button>
+          </div>
+        </div>
+
+        <!-- مودال إلغاء إعلان من الأدمن مع سبب + استرجاع -->
+        <div class="modal fade" id="adminCancelSponsoredModal" tabindex="-1">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+              <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">إلغاء إعلان ممول + استرجاع الرصيد</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body">
+                <p>سيتم <strong>استرجاع المبلغ كاملاً</strong> لرصيد المستخدم.</p>
+                <label class="form-label">سبب الإلغاء *</label>
+                <textarea class="form-control" id="adminCancelReason" rows="3" required placeholder="اكتب السبب..."></textarea>
+                <input type="hidden" id="adminCancelSponsoredId">
+                <input type="hidden" id="adminCancelSponsoredUserId">
+                <input type="hidden" id="adminCancelSponsoredPrice">
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">تراجع</button>
+                <button type="button" class="btn btn-danger" id="adminConfirmCancelSponsored">تأكيد الإلغاء والاسترجاع</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="section-usersEarnings" class="admin-section d-none">
+          <h3 class="mb-4">أرباح المستخدمين</h3>
+          <input type="text" class="form-control mb-3" id="usersEarnSearch" placeholder="بحث باسم أو إيميل أو ID...">
+          <div id="usersEarningsList"></div>
+          <div id="userEarnDetail" class="mt-4 d-none"></div>
+        </div>
+
+        <div id="section-resetEarnings" class="admin-section d-none">
+          <h3 class="mb-3"><i class="fas fa-undo me-2"></i>إعادة / إلغاء الربح (للتجربة)</h3>
+          <div class="alert alert-warning">
+            هذا القسم لإلغاء أرباح تجريبية وهمية. الإلغاء يضع علامة <code>earningsVoided</code> على المشتريات فلا تُحسب في أرباح المستخدم ولا عمولة المحرك — بدون حذف السجل.
+          </div>
+          <input type="text" class="form-control mb-3" id="resetEarnSearch" placeholder="بحث باسم أو إيميل أو ID مستخدم...">
+          <div id="resetEarnUsersList"><div class="text-muted">جاري التحميل...</div></div>
+          <div id="resetEarnDetail" class="mt-4 d-none"></div>
+        </div>
+
+        <div id="section-sellerPayouts" class="admin-section d-none">
+          <h3 class="mb-4">إرسال أرباح التاجر</h3>
+          <div id="sellerPayoutsList"><div class="text-muted">جاري التحميل عند فتح القسم فقط...</div></div>
+        </div>
+
+        
+        <div id="section-admins" class="admin-section d-none">
+          <h3 class="mb-3"><i class="fas fa-user-shield me-2"></i>الإداريون</h3>
+          <div class="alert alert-info small">المالك الرئيسي فقط يستطيع تعيين وعزل الإداريين. الصلاحيات تحدد الأقسام الظاهرة لكل إداري.</div>
+          
+          <h5 class="mb-2">تعيين إداري جديد</h5>
+          <input type="search" class="form-control mb-3" id="adminAppointSearch" placeholder="بحث بالاسم أو الإيميل أو ID...">
+          <div id="adminAppointResults" class="mb-4"></div>
+
+          <h5 class="mb-2">الإداريون المعيّنون</h5>
+          <div id="appointedAdminsList"><div class="text-muted">جاري التحميل عند فتح القسم...</div></div>
+        </div>
+
+        <!-- مودال تعيين / تعديل صلاحيات -->
+        <div class="modal fade" id="adminRolesModal" tabindex="-1">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="adminRolesModalTitle">تحديد الإدارية</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body">
+                <p class="small text-muted" id="adminRolesTargetLabel"></p>
+                <input type="hidden" id="adminRolesUserId">
+                <div class="form-check mb-2">
+                  <input class="form-check-input admin-role-cb" type="checkbox" value="general" id="role_general">
+                  <label class="form-check-label" for="role_general"><strong>الإدارة العامة</strong> — لوحة التحكم، الملف، الأخبار</label>
+                </div>
+                <div class="form-check mb-2">
+                  <input class="form-check-input admin-role-cb" type="checkbox" value="users" id="role_users">
+                  <label class="form-check-label" for="role_users"><strong>إدارة المستخدمين</strong> — المستخدمون، المحظورون، الدعم</label>
+                </div>
+                <div class="form-check mb-2">
+                  <input class="form-check-input admin-role-cb" type="checkbox" value="products" id="role_products">
+                  <label class="form-check-label" for="role_products"><strong>إدارة المنتجات</strong> — المراجعة، المنتجات، الإبداعات، إضافة مشروع</label>
+                </div>
+                <div class="form-check mb-2">
+                  <input class="form-check-input admin-role-cb" type="checkbox" value="finance" id="role_finance">
+                  <label class="form-check-label" for="role_finance"><strong>إدارة المالية</strong> — الشحن، إرسال الأرباح، أرباحي، الإعلانات الممولة</label>
+                </div>
+                <div class="form-check mb-2">
+                  <input class="form-check-input admin-role-cb" type="checkbox" value="tools" id="role_tools">
+                  <label class="form-check-label" for="role_tools"><strong>إدارة الأدوات</strong> — بحث ID، Drive، Firebase</label>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary" id="saveAdminRolesBtn">حفظ الصلاحيات</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- مودال تفاصيل إداري -->
+        <div class="modal fade" id="adminDetailModal" tabindex="-1">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">تفاصيل الإداري</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body" id="adminDetailBody"></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="section-drive" class="admin-section d-none">
+          <h3 class="mb-3"><i class="fab fa-google-drive me-2"></i>إعدادات Google Drive</h3>
+          <div class="alert alert-info">
+            تغيير رابط السكربت هنا <strong>لا يحذف ولا يعيد</strong> ملفات المشاريع القديمة. يؤثر فقط على الرفوعات الجديدة.
+          </div>
+          <div class="account-card">
+            <div class="mb-3">
+              <label class="form-label">رابط Web App (Google Apps Script)</label>
+              <input type="url" class="form-control" id="driveScriptUrl" placeholder="https://script.google.com/macros/s/.../exec">
+            <label class="form-label mt-3">رابط المتجر العام (لنسخ روابط المنتجات)</label>
+            <input type="url" class="form-control" id="storePublicUrl" placeholder="https://lamadh41-lgtm.github.io/sds/">
+            <small class="text-muted">المطلوب: https://lamadh41-lgtm.github.io/sds/ — بدون هذا الرابط النسخ هيطلع مسار الأدمن بالغلط</small>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">الكلمة السرية (SECRET) — نفس المكتوبة في السكربت</label>
+              <input type="text" class="form-control" id="driveSecret" placeholder="كلمة السر">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">رابط مجلد الدرايف (للمرجع فقط)</label>
+              <input type="url" class="form-control" id="driveFolderUrl" placeholder="https://drive.google.com/drive/folders/...">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">الحد الأقصى لحجم الملف (ميجا)</label>
+              <input type="number" class="form-control" id="driveMaxMb" min="1" max="50" value="15">
+            </div>
+            <button type="button" class="btn btn-primary" id="saveDriveSettingsBtn">
+              <i class="fas fa-save me-1"></i>حفظ وتجديد إعدادات الرفع
+            </button>
+            <button type="button" class="btn btn-outline-secondary ms-2" id="testDriveBtn">
+              <i class="fas fa-plug me-1"></i>اختبار الاتصال بالسكربت
+            </button>
+            <div id="driveSaveMsg" class="mt-3"></div>
+            <hr>
+            <p class="small text-muted mb-1">آخر تحديث: <span id="driveUpdatedAt">—</span></p>
+            <p class="small text-muted">الملفات القديمة في الموقع تفضل بروابطها كما هي حتى لو غيّرت الرابط.</p>
+          </div>
+        </div>
+
+        <div id="section-firebase" class="admin-section d-none">
+          <h3 class="mb-4"><i class="fas fa-fire text-warning me-2"></i>Firebase — الاستهلاك والحدود</h3>
+          <div class="alert alert-info">
+            <strong>ملاحظة:</strong> الأرقام الحقيقية للاستهلاك تظهر فقط من لوحة Firebase Console. هنا بنعرض تقدير بناءً على عدد المستندات + حدود الخطة المجانية (Spark).
+          </div>
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <div class="card h-100">
+                <div class="card-header bg-dark text-white">معلومات المشروع</div>
+                <div class="card-body" id="fbProjectInfo">
+                  <p class="mb-1"><strong>Project ID:</strong> <code>misran-4b187</code></p>
+                  <p class="mb-1"><strong>الخطة:</strong> Spark (مجاني)</p>
+                  <p class="mb-0"><a href="https://console.firebase.google.com/project/misran-4b187/usage" target="_blank" class="btn btn-sm btn-outline-primary mt-2"><i class="fas fa-external-link-alt me-1"></i>فتح Usage في Console</a></p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="card h-100">
+                <div class="card-header bg-dark text-white">حدود Spark المجانية (يومية)</div>
+                <div class="card-body small">
+                  <ul class="mb-0">
+                    <li>Firestore Reads: <strong>50,000</strong> / يوم</li>
+                    <li>Firestore Writes: <strong>20,000</strong> / يوم</li>
+                    <li>Firestore Deletes: <strong>20,000</strong> / يوم</li>
+                    <li>Storage: <strong>1 GB</strong> + 10 GB تنزيل/شهر</li>
+                    <li>Auth: غير محدود تقريباً</li>
+                  </ul>
+                  <p class="mt-2 mb-0 text-muted">الفترة المجانية تتجدد كل يوم في منتصف الليل (UTC).</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <h5 class="mb-3">تقدير الاستهلاك الحالي (عدد المستندات)</h5>
+          <div class="row g-3 mb-3" id="fbUsageCards">
+            <div class="col-12 text-center py-4"><div class="spinner-border text-primary"></div></div>
+          </div>
+          <div class="card">
+            <div class="card-header">تفاصيل المجموعات (Collections)</div>
+            <div class="card-body" id="fbCollectionsDetail"></div>
+          </div>
+          <div class="mt-3">
+            <button class="btn btn-primary" id="fbRefreshBtn"><i class="fas fa-sync me-1"></i>تحديث التقدير</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Modals for actions -->
+  <div class="modal fade" id="actionModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="actionModalTitle">تأكيد</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div id="actionModalBody"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+          <button type="button" class="btn btn-primary" id="actionModalConfirm">تأكيد</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+  <div class="spinner-overlay d-none" id="loadingOverlay">
+    <div class="spinner-border text-primary" style="width:3rem;height:3rem;"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module" src="admin.js"></script>
+</body>
+</html>

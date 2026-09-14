@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>الدعم والتواصل | محرك مصران</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="styles.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
+    <div class="container">
+      <a class="navbar-brand js-site-brand" href="index.html"><i class="fas fa-ankh me-2"></i>محرك مصران</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link" href="projects.html">المشاريع</a></li>
+          <li class="nav-item"><a class="nav-link nav-engine-download" href="engine.html"><i class="fas fa-download me-1"></i>تحميل المحرك</a></li>
+          <li class="nav-item"><a class="nav-link" href="content.html"><i class="fas fa-play-circle me-1"></i>المحتوى</a></li>
+          <li class="nav-item"><a class="nav-link" href="index.html#about">عن المتجر</a></li>
+          <li class="nav-item"><a class="nav-link" href="support.html"><i class="fas fa-headset me-1"></i>الدعم <span class="nav-support-badge support-badge-dot d-none"></span></a></li>
+        </ul>
+        <div class="d-flex align-items-center gap-3" id="authArea"></div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container py-5">
+    <h2 class="section-title mb-4">الدعم والتواصل</h2>
+    
+    <div class="row">
+      <div class="col-lg-4 mb-4">
+        <div class="account-card text-center">
+          <i class="fas fa-phone-alt fa-3x text-primary mb-3"></i>
+          <h4>رقم المطور</h4>
+          <p class="fs-4 fw-bold" id="devPhone">سيتم إضافته لاحقاً</p>
+          <p class="text-muted small">للتواصل المباشر في الحالات العاجلة</p>
+        </div>
+      </div>
+      <div class="col-lg-8">
+        <div class="account-card">
+          <h4 class="mb-3"><i class="fas fa-comments me-2"></i>الدردشة مع الدعم</h4>
+          <div class="chat-box" id="chatBox">
+            <div class="text-center text-muted py-4">سجل دخول لبدء المحادثة مع الدعم</div>
+          </div>
+          <div class="input-group mt-3" id="chatInputArea" style="display:none;">
+            <input type="text" class="form-control" id="chatInput" placeholder="اكتب رسالتك...">
+            <button class="btn btn-primary" id="sendChatBtn"><i class="fas fa-paper-plane"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module">
+    import { auth, db, onAuthStateChanged, collection, addDoc, query, where, limit, onSnapshot, serverTimestamp } from './firebase.js';
+
+    function showToast(msg, type='success') {
+      let container = document.querySelector('.toast-container');
+      if (!container) {
+        container = document.createElement('div');
+        container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+        container.style.zIndex = '9999';
+        document.body.appendChild(container);
+      }
+      const id = 'toast-' + Date.now();
+      const bg = type === 'error' ? 'bg-danger' : 'bg-success';
+      container.insertAdjacentHTML('beforeend', `<div id="${id}" class="toast align-items-center text-white ${bg} border-0"><div class="d-flex"><div class="toast-body">${msg}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div></div>`);
+      try { new bootstrap.Toast(document.getElementById(id)).show(); } catch(e){}
+    }
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user) return;
+      document.getElementById('chatInputArea').style.display = 'flex';
+      const chatBox = document.getElementById('chatBox');
+      chatBox.innerHTML = '<div class="text-center text-muted">جاري تحميل المحادثة...</div>';
+
+      // الصفحة دي مخصصة للدردشة — onSnapshot هنا مقصود، مع limit
+      const q = query(collection(db, 'supportChats'), where('userId', '==', user.uid), limit(80));
+      onSnapshot(q, (snap) => {
+        if (snap.empty) {
+          chatBox.innerHTML = '<div class="text-center text-muted py-3">ابدأ المحادثة بإرسال رسالة</div>';
+          return;
+        }
+        // ترتيب يدوي
+        const docs = snap.docs.slice().sort((a, b) => {
+          const t1 = a.data().createdAt?.toMillis?.() || 0;
+          const t2 = b.data().createdAt?.toMillis?.() || 0;
+          return t1 - t2;
+        });
+        chatBox.innerHTML = docs.map(d => {
+          const m = d.data();
+          const isMe = m.sender === 'user';
+          return `
+            <div class="chat-message ${isMe ? 'me' : ''}">
+              <div class="chat-bubble">${m.text}</div>
+              <small class="text-muted">${m.createdAt?.toDate ? m.createdAt.toDate().toLocaleString('ar-EG') : ''}</small>
+            </div>
+          `;
+        }).join('');
+        chatBox.scrollTop = chatBox.scrollHeight;
+      });
+
+      document.getElementById('sendChatBtn').onclick = async () => {
+        const input = document.getElementById('chatInput');
+        const text = input.value.trim();
+        if (!text) return;
+        await addDoc(collection(db, 'supportChats'), {
+          userId: user.uid,
+          userEmail: user.email,
+          sender: 'user',
+          text,
+          createdAt: serverTimestamp(),
+          read: false
+        });
+        input.value = '';
+      };
+    });
+  </script>
+</body>
+</html>

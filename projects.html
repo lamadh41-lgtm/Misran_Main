@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>المشاريع | محرك مصران</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="styles.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
+    <div class="container">
+      <a class="navbar-brand js-site-brand" href="index.html"><i class="fas fa-ankh me-2"></i>محرك مصران</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link" href="projects.html">المشاريع</a></li>
+          <li class="nav-item"><a class="nav-link nav-engine-download" href="engine.html"><i class="fas fa-download me-1"></i>تحميل المحرك</a></li>
+          <li class="nav-item"><a class="nav-link" href="content.html"><i class="fas fa-play-circle me-1"></i>المحتوى</a></li>
+          <li class="nav-item"><a class="nav-link" href="index.html#about">عن المتجر</a></li>
+          <li class="nav-item"><a class="nav-link" href="support.html"><i class="fas fa-headset me-1"></i>الدعم <span class="nav-support-badge support-badge-dot d-none"></span></a></li>
+        </ul>
+        <div class="d-flex align-items-center gap-3" id="authArea"></div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="section-title mb-0" style="text-align:right;">جميع المشاريع</h2>
+      <button class="btn btn-primary-custom text-white" id="uploadFromProjects" style="display:none;">
+        <i class="fas fa-plus me-1"></i>شارك إبداعاتك
+      </button>
+    </div>
+
+    <!-- محرك البحث أعلى الفلاتر (مثل المواقع العادية) -->
+    <div class="mb-4">
+      <div class="input-group input-group-lg shadow-sm">
+        <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+        <input type="search" class="form-control border-start-0" id="filterSearch" placeholder="ابحث في المشاريع والمنتجات...">
+      </div>
+    </div>
+
+    <div class="row g-3">
+      <!-- الفلاتر على اليمين (RTL) -->
+      <div class="col-lg-3 col-md-4 order-lg-1">
+        <div id="projectsFilterBar" class="card border-0 shadow-sm sticky-top" style="top:80px;">
+          <div class="card-body">
+            <h6 class="mb-3"><i class="fas fa-filter me-1"></i>الفلاتر</h6>
+            <div class="mb-3">
+              <label class="form-label small mb-1 fw-bold">الأقسام</label>
+              <div id="filterCategoryBox" class="d-flex flex-column gap-1" style="max-height:220px;overflow-y:auto;"></div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small mb-1 fw-bold">السعر</label>
+              <div class="form-check">
+                <input class="form-check-input filter-price-mode" type="checkbox" value="free" id="filterFree">
+                <label class="form-check-label" for="filterFree">مجاني</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input filter-price-mode" type="checkbox" value="paid" id="filterPaid">
+                <label class="form-check-label" for="filterPaid">مدفوع</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="filterOnSale">
+                <label class="form-check-label" for="filterOnSale">عروض فقط</label>
+              </div>
+              <div class="row g-1 mt-2">
+                <div class="col-6">
+                  <input type="number" class="form-control form-control-sm" id="filterPriceMin" min="0" step="any" placeholder="من">
+                </div>
+                <div class="col-6">
+                  <input type="number" class="form-control form-control-sm" id="filterPriceMax" min="0" step="any" placeholder="إلى">
+                </div>
+              </div>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-secondary w-100" id="filterResetBtn">إعادة ضبط</button>
+          </div>
+        </div>
+      </div>
+      <!-- شبكة المشاريع -->
+      <div class="col-lg-9 col-md-8">
+        <div class="row g-4" id="projectsGrid">
+          <div class="col-12 text-center py-5">
+            <div class="spinner-border text-primary"></div>
+            <p class="mt-2">جاري تحميل المشاريع...</p>
+          </div>
+        </div>
+        <nav class="mt-4">
+          <ul class="pagination justify-content-center" id="pagination"></ul>
+        </nav>
+      </div>
+    </div>
+
+
+  </div>
+
+  <!-- Upload Modal (same as index) -->
+  <div class="modal fade" id="uploadModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="fas fa-cloud-upload-alt me-2"></i>شارك إبداعاتك</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="uploadForm">
+            <div class="mb-3">
+              <label class="form-label">اسم المشروع *</label>
+              <input type="text" class="form-control" id="projTitle" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">الوصف *</label>
+              <textarea class="form-control" id="projDesc" rows="4" required></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">الصورة المصغرة * (صورة واحدة فقط)</label>
+              <div class="d-flex gap-2 align-items-start">
+                <input type="file" class="form-control" id="projThumbFile" accept="image/*" required>
+                <button type="button" class="btn btn-outline-danger btn-sm flex-shrink-0 d-none" id="clearThumbBtn" title="حذف"><i class="fas fa-times"></i></button>
+              </div>
+              <small class="text-muted d-block">المقاس المطلوب للعرض للمستخدمين: <strong>800 × 450</strong> بكسل (نسبة 16:9). بعد الاختيار تقدر تحرّك المربع وتكبّره/تصغّره من الزوايا.</small>
+              <div id="thumbPreview" class="mt-2"></div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">صور إضافية (اختياري — حتى 12)</label>
+              <input type="file" class="form-control" id="projExtraImages" accept="image/*" multiple>
+              <small class="text-muted">كل اختيار جديد <strong>يُضاف</strong> للقائمة (لا يستبدل). اضغط × لحذف صورة</small>
+              <div id="extraPreview" class="mt-2 d-flex flex-wrap gap-1"></div>
+            </div>
+            <input type="hidden" id="projImagesFiles" value="">
+            <div class="mb-3">
+              <label class="form-label">ملف المشروع * (ملف واحد فقط)</label>
+              <div class="d-flex gap-2 align-items-start">
+                <input type="file" class="form-control" id="projFilesFile" accept=".zip,.rar,.7z,.tar,.gz,.tgz,application/zip,application/x-zip-compressed,application/x-rar-compressed,application/octet-stream,*/*" required>
+                <button type="button" class="btn btn-outline-danger btn-sm flex-shrink-0 d-none" id="clearFilesBtn" title="حذف"><i class="fas fa-times"></i></button>
+              </div>
+              <small class="text-muted">ملف واحد فقط: ZIP أو RAR — <strong>غير مسموح برفع مجلد</strong></small>
+              <div id="filesPreview" class="mt-1 small text-success"></div>
+              <div class="progress mt-2 d-none" id="uploadProgressWrap" style="height:8px;">
+                <div class="progress-bar" id="uploadProgressBar" style="width:0%"></div>
+              </div>
+              <div class="small text-muted" id="uploadProgressText"></div>
+            </div>
+            <!-- حقول مخفية للتوافق مع الكود القديم -->
+            <input type="hidden" id="projThumbLink" value="">
+            <input type="hidden" id="projFilesLink" value="">
+            <div class="mb-3">
+              <label class="form-label">نوع المنتج *</label>
+              <div class="d-flex gap-3">
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="projPricing" id="projPricingFree" value="free" checked>
+                  <label class="form-check-label" for="projPricingFree">مجاني</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="projPricing" id="projPricingPaid" value="paid">
+                  <label class="form-check-label" for="projPricingPaid">مدفوع</label>
+                </div>
+              </div>
+            </div>
+            <div class="mb-3" id="projPriceWrap" style="display:none;">
+              <label class="form-label">السعر (ج.م) — سعر البيع الحالي *</label>
+              <input type="number" class="form-control" id="projPrice" min="0" step="any" value="0" placeholder="مثال: 15">
+            </div>
+
+            <div class="mb-3" id="projSaleWrap" style="display:none;">
+              <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" id="projSaleEnabled">
+                <label class="form-check-label" for="projSaleEnabled">تفعيل عرض (سعر مخفّض لمدة محدودة)</label>
+              </div>
+              <div id="projSaleFields" class="border rounded p-2 bg-light d-none">
+                <div class="row g-2 align-items-end">
+                  <div class="col-6">
+                    <label class="form-label small fw-bold text-danger">سعر العرض *</label>
+                    <input type="number" class="form-control form-control-sm" id="projSaleOfferPrice" min="0" step="any" placeholder="مثال: 15">
+                    <small class="text-muted">يظهر للناس أثناء العرض</small>
+                  </div>
+                  <div class="col-6">
+                    <label class="form-label small fw-bold">السعر بعد انتهاء العرض *</label>
+                    <input type="number" class="form-control form-control-sm" id="projOriginalPrice" min="0" step="any" placeholder="مثال: 20">
+                    <small class="text-muted">يرجع للناس بعد انتهاء المدة</small>
+                  </div>
+                  <div class="col-6">
+                    <label class="form-label small">مدة العرض *</label>
+                    <input type="number" class="form-control form-control-sm" id="projSaleDuration" min="1" step="1" value="7">
+                  </div>
+                  <div class="col-6">
+                    <label class="form-label small">الوحدة</label>
+                    <select class="form-select form-select-sm" id="projSaleUnit">
+                      <option value="minutes">دقائق</option>
+                      <option value="hours">ساعات</option>
+                      <option value="days" selected>أيام</option>
+                      <option value="months">شهور</option>
+                    </select>
+                  </div>
+                </div>
+                <small class="text-muted d-block mt-2">مدة العرض تبدأ عند <strong>قبول الإدارة</strong>. بعد أي تعديل عرض: انتظار 24 ساعة على نفس المنتج. العمولة على السعر المدفوع وقت الشراء.</small>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">الفلاتر / الأقسام * <small class="text-muted">(اختر من 1 إلى 20)</small></label>
+              <div id="projCategoriesBox" class="row g-1" style="max-height:180px;overflow-y:auto;"></div>
+              <small class="text-muted">مطلوب فلتر واحد على الأقل حتى تظهر نتيجة الفلاتر للزوار.</small>
+            </div>
+
+            <div id="paymentFields" style="display:none;">
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">طريقة الاستلام *</label>
+                  <select class="form-select" id="projPayMethod">
+                    <option value="">اختر...</option>
+                    <option value="vodafone">فودافون كاش</option>
+                    <option value="etisalat">اتصالات كاش</option>
+                    <option value="orange">أورنج كاش</option>
+                    <option value="we">وي كاش</option>
+                    <option value="instapay">إنستاباي</option>
+                  </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">رقم المحفظة/إنستاباي *</label>
+                  <input type="text" class="form-control" id="projPayNumber">
+                </div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">اسم صاحب الحساب *</label>
+                <input type="text" class="form-control" id="projPayName">
+              </div>
+            </div>
+            <div class="alert alert-info">عمولة 5% من السعر. <a href="#" id="commissionTermsLink">الشروط</a></div>
+            <div id="commissionTermsText" class="alert alert-secondary d-none">الشروط سيتم إضافتها لاحقاً.</div>
+            <div class="d-grid gap-2">
+              <button type="button" class="btn btn-primary-custom text-white" id="submitReviewBtn">
+                <i class="fas fa-paper-plane me-1"></i> إرسال المشروع للمراجعة
+              </button>
+              <button type="button" class="btn btn-outline-secondary" id="saveDraftBtn">
+                <i class="fas fa-save me-1"></i> حفظ المشروع
+              </button>
+            </div>
+            <p class="small text-muted mt-2 mb-0">بعد الإرسال للمراجعة لن تتمكن من التعديل. يمكنك الحفظ كمسودة أولاً.</p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+  <div class="spinner-overlay d-none" id="loadingOverlay">
+    <div class="spinner-border text-primary" style="width:3rem;height:3rem;"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module">
+    import { auth, db, storage, onAuthStateChanged, collection, query, where, orderBy, getDocs, limit, startAfter, addDoc, serverTimestamp, ref, uploadBytes, getDownloadURL, doc, getDoc } from './firebase.js';
+    import { showToast, showLoading, getInitials } from './app.js';
+    import './localCache.js';
+
+    const PAGE_SIZE = 10;
+    let myOwnedIds = new Set();
+    let myPurchasedIds = new Set();
+    let currentUser = null;
+    let projectsCursor = null;
+    let projectsPageStack = [null];
+    let projectsPageIndex = 0;
+
+    // ===== فلاتر وبحث =====
+    function fillCategoriesBox() {
+      const box = document.getElementById('projCategoriesBox');
+      if (!box || box.dataset.ready) return;
+      const cats = window.PROJECT_CATEGORIES || [];
+      box.innerHTML = cats.map((c, i) => `
+        <div class="col-6 col-md-4">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="projCategory" value="${c}" id="cat_${i}">
+            <label class="form-check-label small" for="cat_${i}">${c}</label>
+          </div>
+        </div>`).join('');
+      box.dataset.ready = '1';
+    }
+    function fillFilterCategorySelect() {
+      const box = document.getElementById('filterCategoryBox');
+      if (!box || box.dataset.ready) return;
+      const cats = window.PROJECT_CATEGORIES || [];
+      box.innerHTML = cats.map((c, i) => `
+        <div class="form-check">
+          <input class="form-check-input filter-cat-cb" type="checkbox" value="${c}" id="fc_${i}">
+          <label class="form-check-label small" for="fc_${i}">${c}</label>
+        </div>`).join('');
+      box.dataset.ready = '1';
+    }
+
+    function applyClientFilters(docs) {
+      const q = (document.getElementById('filterSearch')?.value || '').trim().toLowerCase();
+      const selectedCats = Array.from(document.querySelectorAll('.filter-cat-cb:checked')).map(el => el.value);
+      const wantFree = document.getElementById('filterFree')?.checked;
+      const wantPaid = document.getElementById('filterPaid')?.checked;
+      const minP = parseFloat(document.getElementById('filterPriceMin')?.value);
+      const maxP = parseFloat(document.getElementById('filterPriceMax')?.value);
+      const onSaleOnly = document.getElementById('filterOnSale')?.checked;
+      return docs.filter(d => {
+        const p = typeof d.data === 'function' ? d.data() : d.data;
+        if (!p) return false;
+        if (q) {
+          const hay = ((p.title||'') + ' ' + (p.description||'') + ' ' + (p.sellerName||'') + ' ' + ((p.categories||[]).join(' '))).toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        if (selectedCats.length) {
+          const cats = p.categories || [];
+          if (!selectedCats.some(c => cats.includes(c))) return false;
+        }
+        const eff = window.getEffectivePrice ? window.getEffectivePrice(p) : (parseFloat(p.price)||0);
+        if (wantFree && !wantPaid && eff > 0) return false;
+        if (wantPaid && !wantFree && eff <= 0) return false;
+        if (isFinite(minP) && eff < minP) return false;
+        if (isFinite(maxP) && eff > maxP) return false;
+        if (onSaleOnly && !(window.isProductOnSale && window.isProductOnSale(p))) return false;
+        return true;
+      });
+    }
+
+    function renderProjectCards(pageDocs) {
+      return pageDocs.map(d => {
+        const p = d.data();
+        const priceHtml = window.priceHtmlForProduct
+          ? window.priceHtmlForProduct(p)
+          : (p.isFree || (window.getEffectivePrice ? window.getEffectivePrice(p) : p.price) === 0
+            ? '<span class="project-price free">مجاني</span>'
+            : `<span class="project-price">${window.getEffectivePrice ? window.getEffectivePrice(p) : p.price} ج.م</span>`);
+        const verified = p.isOfficial
+          ? '<span class="badge-verified ms-1"><i class="fas fa-check-circle"></i> المحرك</span>'
+          : '';
+        let ownerBadge = '';
+        if (myOwnedIds.has(d.id)) ownerBadge = '<span class="thumb-badge thumb-badge-mine">إبداعاتي</span>';
+        else if (myPurchasedIds.has(d.id)) ownerBadge = '<span class="thumb-badge thumb-badge-bought">مشترياتي</span>';
+        const thumb = p.thumbnailDirect
+          || (p.thumbnail && (String(p.thumbnail).includes('drive.google.com')
+            ? 'https://drive.google.com/thumbnail?id=' + ((String(p.thumbnail).match(/\/d\/([a-zA-Z0-9_-]+)/)||[])[1] || (String(p.thumbnail).match(/id=([a-zA-Z0-9_-]+)/)||[])[1] || '') + '&sz=w500'
+            : p.thumbnail))
+          || 'https://via.placeholder.com/400x180?text=Project';
+        return `
+          <div class="col-md-4 col-sm-6">
+            <div class="project-card h-100">
+              <a href="product.html?id=${d.id}" class="text-decoration-none position-relative d-block">
+                <img src="${thumb}" class="project-thumb" alt="${(p.title||'').replace(/"/g,'&quot;')}" onerror="this.src='https://via.placeholder.com/400x180?text=Project'">
+                ${ownerBadge}
+              </a>
+              <div class="project-body">
+                <a href="product.html?id=${d.id}" class="text-decoration-none text-dark">
+                  <div class="project-title">${p.title || ''} ${verified}</div>
+                  <div class="text-muted small mb-2 text-truncate">${p.description || ''}</div>
+                </a>
+                <div class="d-flex justify-content-between align-items-center mt-2">
+                  ${priceHtml}
+                  <div class="d-flex align-items-center gap-1">
+                    <a href="seller.html?id=${p.sellerId || ''}" class="text-decoration-none small text-muted d-flex align-items-center gap-1">
+                      ${p.sellerPhoto ? `<img src="${p.sellerPhoto}" class="rounded-circle" style="width:22px;height:22px;object-fit:cover;">` : `<i class="fas fa-store"></i>`}
+                      ${p.sellerName || 'بائع'}
+                    </a>
+                    <a href="product.html?id=${d.id}" class="btn btn-sm btn-outline-secondary py-0 px-2" title="مشاركة" onclick="event.stopPropagation();"><i class="fas fa-share-alt"></i></a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    window._rerenderProjectsFiltered = function() {
+      const grid = document.getElementById('projectsGrid');
+      if (!grid || !window._lastProjectsPageDocs) return;
+      let pageDocs = applyClientFilters(window._lastProjectsPageDocs);
+      if (currentUser) {
+        pageDocs.forEach(d => {
+          if (d.data().sellerId === currentUser.uid) myOwnedIds.add(d.id);
+        });
+      }
+      if (pageDocs.length === 0) {
+        grid.innerHTML = '<div class="col-12 text-center py-5 text-muted"><i class="fas fa-box-open fa-3x mb-3"></i><p>لا توجد نتائج مطابقة للبحث أو الفلاتر.</p></div>';
+        const pag = document.getElementById('pagination');
+        if (pag) pag.innerHTML = '';
+        return;
+      }
+      grid.innerHTML = renderProjectCards(pageDocs);
+    };
+
+    function bindFilterEvents() {
+      const rerender = () => { try { window._rerenderProjectsFiltered && window._rerenderProjectsFiltered(); } catch(_){} };
+      document.getElementById('filterSearch')?.addEventListener('input', rerender);
+      ['filterPriceMin','filterPriceMax'].forEach(id => document.getElementById(id)?.addEventListener('input', rerender));
+      document.getElementById('filterOnSale')?.addEventListener('change', rerender);
+      document.getElementById('filterFree')?.addEventListener('change', rerender);
+      document.getElementById('filterPaid')?.addEventListener('change', rerender);
+      document.getElementById('filterCategoryBox')?.addEventListener('change', rerender);
+      document.getElementById('filterResetBtn')?.addEventListener('click', () => {
+        const s = document.getElementById('filterSearch'); if (s) s.value = '';
+        document.querySelectorAll('.filter-cat-cb').forEach(el => { el.checked = false; });
+        ['filterFree','filterPaid','filterOnSale'].forEach(id => { const el = document.getElementById(id); if (el) el.checked = false; });
+        const mn = document.getElementById('filterPriceMin'); if (mn) mn.value = '';
+        const mx = document.getElementById('filterPriceMax'); if (mx) mx.value = '';
+        rerender();
+      });
+    }
+    bindFilterEvents();
+
+    async function loadProjects(direction = 'first') {
+      const grid = document.getElementById('projectsGrid');
+      if (!grid) return;
+      grid.innerHTML = '<div class="col-12 text-center py-5"><div class="spinner-border text-primary"></div></div>';
+
+      try {
+        let pageDocs = null;
+
+        // كاش الصفحة الأولى محلياً
+        // كاش تابع: عرض فوري فقط، ثم دائماً شبكة للصفحة الأولى
+        let paintedFromCache = false;
+        if (direction === 'first') {
+          const cachedPage = window.localCache?.get('projects:page:0');
+          if (Array.isArray(cachedPage) && cachedPage.length) {
+            const activeOnly = cachedPage.filter(x => {
+              const st = (typeof x.data === 'function' ? x.data()?.status : x.data?.status) || 'active';
+              return st === 'active';
+            });
+            if (activeOnly.length) {
+              pageDocs = activeOnly.map(x => ({
+                id: x.id,
+                data: () => (typeof x.data === 'function' ? x.data() : x.data)
+              }));
+              projectsPageIndex = 0;
+              projectsPageStack = [null];
+              paintedFromCache = true;
+              // ارسم فوراً من التابع
+              try {
+                window._lastProjectsPageDocs = pageDocs;
+                const filtered = applyClientFilters(pageDocs);
+                if (filtered.length) grid.innerHTML = renderProjectCards(filtered);
+              } catch(_){}
+            }
+          }
+        }
+
+        // الشبكة أصل — حتى لو فيه كاش نعيد الجلب ونحدّث التابع
+        if (!pageDocs || paintedFromCache) {
+          let qBase;
+          try {
+            if (direction === 'next' && projectsCursor) {
+              qBase = query(collection(db, 'projects'), where('status', '==', 'active'), orderBy('createdAt', 'desc'), startAfter(projectsCursor), limit(PAGE_SIZE));
+            } else if (direction === 'prev' && projectsPageIndex > 0) {
+              projectsPageIndex--;
+              const cursor = projectsPageStack[projectsPageIndex];
+              qBase = cursor
+                ? query(collection(db, 'projects'), where('status', '==', 'active'), orderBy('createdAt', 'desc'), startAfter(cursor), limit(PAGE_SIZE))
+                : query(collection(db, 'projects'), where('status', '==', 'active'), orderBy('createdAt', 'desc'), limit(PAGE_SIZE));
+            } else {
+              projectsPageIndex = 0;
+              projectsPageStack = [null];
+              qBase = query(collection(db, 'projects'), where('status', '==', 'active'), orderBy('createdAt', 'desc'), limit(PAGE_SIZE));
+            }
+          } catch (e) {
+            qBase = query(collection(db, 'projects'), where('status', '==', 'active'), limit(PAGE_SIZE));
+          }
+
+          let snap;
+          try {
+            snap = await getDocs(qBase);
+          } catch (idxErr) {
+            console.warn('Index fallback:', idxErr.message);
+            snap = await getDocs(query(collection(db, 'projects'), where('status', '==', 'active'), limit(PAGE_SIZE)));
+          }
+
+          pageDocs = snap.docs.filter(d => (d.data().status || 'active') === 'active');
+
+          if (projectsPageIndex === 0 || direction === 'first') {
+            try {
+              window.localCache?.set('projects:page:0', pageDocs.map(d => ({ id: d.id, data: d.data() })));
+              pageDocs.forEach(d => window.localCache?.set('product:' + d.id, { id: d.id, ...d.data() }));
+            } catch(_){}
+          }
+        }
+
+        // فلترة + عرض دائماً
+        window._lastProjectsPageDocs = pageDocs;
+        const filtered = applyClientFilters(pageDocs);
+        if (currentUser) {
+          filtered.forEach(d => {
+            if (d.data().sellerId === currentUser.uid) myOwnedIds.add(d.id);
+          });
+        }
+
+        if (filtered.length === 0) {
+          grid.innerHTML = '<div class="col-12 text-center py-5 text-muted"><i class="fas fa-box-open fa-3x mb-3"></i><p>لا توجد نتائج مطابقة للبحث أو الفلاتر.</p></div>';
+          const pag0 = document.getElementById('pagination');
+          if (pag0) pag0.innerHTML = '';
+          return;
+        }
+
+        if (direction === 'next' || direction === 'first') {
+          if (direction === 'next') {
+            projectsPageStack.push(projectsCursor);
+            projectsPageIndex = projectsPageStack.length - 1;
+          }
+          // cursor من docs الشبكة الأصلية (قبل الفلتر) إن أمكن
+          projectsCursor = pageDocs[pageDocs.length - 1] || filtered[filtered.length - 1];
+        }
+
+        grid.innerHTML = renderProjectCards(filtered);
+
+        const pag = document.getElementById('pagination');
+        if (pag) {
+          const hasNext = pageDocs.length >= PAGE_SIZE;
+          const hasPrev = projectsPageIndex > 0;
+          pag.innerHTML = `
+            <li class="page-item ${hasPrev ? '' : 'disabled'}"><a class="page-link" href="#" data-dir="prev">السابق</a></li>
+            <li class="page-item disabled"><span class="page-link">صفحة ${projectsPageIndex + 1}</span></li>
+            <li class="page-item ${hasNext ? '' : 'disabled'}"><a class="page-link" href="#" data-dir="next">التالي</a></li>
+          `;
+          pag.querySelectorAll('.page-link[data-dir]').forEach(el => {
+            el.addEventListener('click', (e) => {
+              e.preventDefault();
+              if (el.parentElement.classList.contains('disabled')) return;
+              loadProjects(el.dataset.dir);
+            });
+          });
+        }
+      } catch (err) {
+        console.error(err);
+        grid.innerHTML = `<div class="col-12 text-center text-danger">
+          <p>حدث خطأ في التحميل</p>
+          <small class="text-muted">${err.message || err}</small>
+          <p class="mt-2">لو طلب Index من Firebase اضغط على اللينك في الـ Console</p>
+        </div>`;
+      }
+    }
+
+    // إعدادات العرض/الرفع
+    document.getElementById('projSaleEnabled')?.addEventListener('change', (e) => {
+      document.getElementById('projSaleFields')?.classList.toggle('d-none', !e.target.checked);
+      if (e.target.checked) {
+        const main = document.getElementById('projPrice');
+        const offer = document.getElementById('projSaleOfferPrice');
+        if (offer && main && !offer.value) offer.value = main.value || '';
+      }
+    });
+    document.querySelectorAll('input[name="projPricing"]').forEach(r => {
+      r.addEventListener('change', () => {
+        const paid = document.querySelector('input[name="projPricing"]:checked')?.value === 'paid';
+        const sw = document.getElementById('projSaleWrap');
+        if (sw) sw.style.display = paid ? '' : 'none';
+        if (!paid) {
+          const se = document.getElementById('projSaleEnabled');
+          if (se) se.checked = false;
+          document.getElementById('projSaleFields')?.classList.add('d-none');
+        }
+      });
+    });
+
+    document.getElementById('commissionTermsLink')?.addEventListener('click', e => {
+      e.preventDefault();
+      document.getElementById('commissionTermsText')?.classList.toggle('d-none');
+    });
+
+    document.getElementById('uploadForm')?.addEventListener('submit', () => {
+      setTimeout(() => loadProjects('first'), 1500);
+    });
+
+    // صورة مصغرة
+    document.getElementById('projThumbFile')?.addEventListener('change', async (e) => {
+      const f = e.target.files?.[0];
+      if (!f) return;
+      try {
+        if (typeof window.openImageCropper === 'function') {
+          const cropped = await window.openImageCropper(f, { aspect: 16/9, outSize: 800, title: 'قص الصورة المصغرة' });
+          window._croppedThumbFile = cropped;
+          const box = document.getElementById('thumbPreview');
+          if (box) box.innerHTML = `<img src="${URL.createObjectURL(cropped)}" style="max-height:120px;border-radius:8px;">`;
+          document.getElementById('clearThumbBtn')?.classList.remove('d-none');
+        } else {
+          window._croppedThumbFile = f;
+          const box = document.getElementById('thumbPreview');
+          if (box) box.innerHTML = `<img src="${URL.createObjectURL(f)}" style="max-height:120px;border-radius:8px;">`;
+          document.getElementById('clearThumbBtn')?.classList.remove('d-none');
+        }
+      } catch (err) {
+        if (err && err.message !== 'cancelled') console.error(err);
+        e.target.value = '';
+      }
+    });
+    document.getElementById('clearThumbBtn')?.addEventListener('click', () => {
+      const inp = document.getElementById('projThumbFile');
+      if (inp) inp.value = '';
+      window._croppedThumbFile = null;
+      const box = document.getElementById('thumbPreview');
+      if (box) box.innerHTML = '';
+      document.getElementById('clearThumbBtn')?.classList.add('d-none');
+    });
+
+    // صور إضافية
+    window._extraImageFiles = window._extraImageFiles || [];
+    document.getElementById('projExtraImages')?.addEventListener('change', (e) => {
+      const incoming = Array.from(e.target.files || []);
+      if (!incoming.length) return;
+      const cur = window._extraImageFiles || [];
+      const room = Math.max(0, 12 - cur.length);
+      const add = incoming.slice(0, room);
+      window._extraImageFiles = cur.concat(add);
+      const box = document.getElementById('extraPreview');
+      if (box) box.innerHTML = window._extraImageFiles.map((f,i)=>`
+        <div class="position-relative d-inline-block me-1 mb-1">
+          <img src="${URL.createObjectURL(f)}" style="height:56px;width:72px;object-fit:cover;border-radius:6px;">
+          <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 p-0" data-i="${i}"
+            style="width:20px;height:20px;font-size:11px;border-radius:50%;" onclick="window._extraImageFiles.splice(${i},1);this.parentElement.remove();">×</button>
+        </div>`).join('');
+      e.target.value = '';
+      if (incoming.length > room) showToast?.('تم الوصول للحد الأقصى 12 صورة', 'error');
+    });
+
+    document.getElementById('projFilesFile')?.addEventListener('change', (e) => {
+      const f = e.target.files?.[0];
+      const label = document.getElementById('projFilesLabel');
+      if (label) label.textContent = f ? f.name : '';
+    });
+
+    fillCategoriesBox();
+    fillFilterCategorySelect();
+    document.getElementById('uploadModal')?.addEventListener('show.bs.modal', fillCategoriesBox);
+
+    // Auth + تحميل المشاريع
+    onAuthStateChanged(auth, async (user) => {
+      currentUser = user;
+      myOwnedIds = new Set();
+      myPurchasedIds = new Set();
+      if (user) {
+        const uploadBtn = document.getElementById('uploadFromProjects');
+        if (uploadBtn) {
+          uploadBtn.style.display = 'inline-block';
+          uploadBtn.onclick = () => new bootstrap.Modal(document.getElementById('uploadModal')).show();
+        }
+        try {
+          const purchSnap = await getDocs(query(collection(db, 'purchases'), where('buyerId', '==', user.uid), limit(80)));
+          purchSnap.docs.forEach(d => {
+            const x = d.data();
+            if (x.status === 'approved' || x.status === 'owned_free') {
+              myPurchasedIds.add(x.projectId);
+            }
+          });
+        } catch (e) { console.error(e); }
+      }
+      loadProjects('first');
+    });
+</script>
+</body>
+</html>

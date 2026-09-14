@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>أرباحك | محرك مصران</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="styles.css" rel="stylesheet">
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
+    <div class="container">
+      <a class="navbar-brand js-site-brand" href="index.html"><i class="fas fa-ankh me-2"></i>محرك مصران</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link" href="projects.html">المشاريع</a></li>
+          <li class="nav-item"><a class="nav-link nav-engine-download" href="engine.html"><i class="fas fa-download me-1"></i>تحميل المحرك</a></li>
+          <li class="nav-item"><a class="nav-link" href="content.html"><i class="fas fa-play-circle me-1"></i>المحتوى</a></li>
+          <li class="nav-item"><a class="nav-link" href="index.html#about">عن المتجر</a></li>
+          <li class="nav-item"><a class="nav-link" href="support.html"><i class="fas fa-headset me-1"></i>الدعم <span class="nav-support-badge support-badge-dot d-none"></span></a></li>
+        </ul>
+        <div class="d-flex align-items-center gap-3" id="authArea"></div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container py-5">
+    <h2 class="mb-4"><i class="fas fa-wallet me-2"></i>أرباحك</h2>
+
+    <div class="row g-3 mb-4">
+      <div class="col-md-4">
+        <div class="stat-card text-center">
+          <div class="stat-number" id="totalGross">0</div>
+          <div>إجمالي الأرباح (قبل الخصم)</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="stat-card text-center">
+          <div class="stat-number text-success" id="totalNet">0</div>
+          <div>صافي الأرباح (بعد خصم 5%)</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="stat-card text-center">
+          <div class="stat-number" id="totalBuyers">0</div>
+          <div>إجمالي المشترين</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-4">
+      <div class="card-body">
+        <h5 class="mb-3">فلتر التاريخ (للتوتال)</h5>
+        <div class="row g-2 align-items-end">
+          <div class="col-md-3">
+            <label class="form-label">من تاريخ</label>
+            <input type="date" class="form-control" id="filterFrom">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">إلى تاريخ</label>
+            <input type="date" class="form-control" id="filterTo">
+          </div>
+          <div class="col-md-3">
+            <button class="btn btn-primary" id="applyFilterBtn"><i class="fas fa-filter me-1"></i>تطبيق</button>
+            <button class="btn btn-outline-secondary" id="clearFilterBtn">مسح</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h4 class="mb-3">مشاريعك المدفوعة</h4>
+    <div id="projectsEarningsList">
+      <div class="text-center py-4"><div class="spinner-border text-primary"></div></div>
+    </div>
+  </div>
+
+  <!-- Details Modal -->
+  <div class="modal fade" id="earningsDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="detailsTitle">تفاصيل الأرباح</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-2 mb-3">
+            <div class="col-md-4">
+              <label class="form-label">من تاريخ</label>
+              <input type="date" class="form-control" id="detailFrom">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">إلى تاريخ</label>
+              <input type="date" class="form-control" id="detailTo">
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+              <button class="btn btn-primary w-100" id="detailFilterBtn">تصفية</button>
+            </div>
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-4"><div class="border rounded p-2 text-center"><div class="fw-bold" id="dGross">0</div><small>إجمالي</small></div></div>
+            <div class="col-4"><div class="border rounded p-2 text-center"><div class="fw-bold text-success" id="dNet">0</div><small>صافي</small></div></div>
+            <div class="col-4"><div class="border rounded p-2 text-center"><div class="fw-bold" id="dBuyers">0</div><small>مشترين</small></div></div>
+          </div>
+          <div id="detailBuyersList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+  <div class="spinner-overlay d-none" id="loadingOverlay">
+    <div class="spinner-border text-primary" style="width:3rem;height:3rem;"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module">
+    import { auth, db, onAuthStateChanged, collection, getDocs, query, where, limit, doc, getDoc } from './firebase.js';
+    import { showToast, showLoading, getInitials } from './app.js';
+
+    let currentUser = null;
+    let allPurchases = [];
+    let myProjects = [];
+    let currentDetailProjectId = null;
+
+    function toDate(ts) {
+      if (!ts) return null;
+      if (ts.toDate) return ts.toDate();
+      if (ts.seconds) return new Date(ts.seconds * 1000);
+      return new Date(ts);
+    }
+
+    function inRange(date, from, to) {
+      if (!date) return false;
+      const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      if (from) {
+        const f = new Date(from);
+        if (d < f) return false;
+      }
+      if (to) {
+        const t = new Date(to);
+        if (d > t) return false;
+      }
+      return true;
+    }
+
+    function rateOf(p) {
+      const r = parseFloat(p.commissionPercent);
+      return (isFinite(r) && r >= 0) ? r : 5;
+    }
+    function calcForPurchases(purchases) {
+      let gross = 0, net = 0, buyers = 0;
+      purchases.forEach(p => {
+        const price = parseFloat(p.price || p.amount) || 0;
+        if (price > 0) {
+          gross += price;
+          buyers++;
+          if (p.sellerNet != null && isFinite(parseFloat(p.sellerNet))) net += parseFloat(p.sellerNet);
+          else net += price * (1 - rateOf(p) / 100);
+        }
+      });
+      return { gross, net, buyers };
+    }
+
+    async function loadData() {
+      const list = document.getElementById('projectsEarningsList');
+      list.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary"></div></div>';
+      try {
+        const [projSnap, purchSnap] = await Promise.all([
+          getDocs(query(collection(db, 'projects'), where('sellerId', '==', currentUser.uid), limit(80))),
+          getDocs(query(collection(db, 'purchases'), where('sellerId', '==', currentUser.uid), limit(80)))
+        ]);
+        myProjects = projSnap.docs
+          .filter(d => d.data().status !== 'deleted' && !d.data().isFree && (parseFloat(d.data().price) || 0) > 0)
+          .map(d => ({ id: d.id, ...d.data() }));
+
+        allPurchases = purchSnap.docs
+          .filter(d => {
+            const p = d.data();
+            return p.status === 'approved' && !p.earningsVoided && (parseFloat(p.price || p.amount) || 0) > 0;
+          })
+          .map(d => ({ id: d.id, ...d.data(), _date: toDate(d.data().approvedAt || d.data().createdAt) }));
+
+        renderTotals();
+        renderProjects();
+      } catch (err) {
+        console.error(err);
+        list.innerHTML = '<div class="alert alert-danger">حدث خطأ في تحميل الأرباح</div>';
+      }
+    }
+
+    function getFilteredPurchases(from, to) {
+      return allPurchases.filter(p => inRange(p._date, from, to));
+    }
+
+    function renderTotals(from = null, to = null) {
+      const filtered = getFilteredPurchases(from, to);
+      const { gross, net, buyers } = calcForPurchases(filtered);
+      document.getElementById('totalGross').textContent = gross.toFixed(2) + ' ج.م';
+      document.getElementById('totalNet').textContent = net.toFixed(2) + ' ج.م';
+      document.getElementById('totalBuyers').textContent = buyers;
+    }
+
+    function renderProjects() {
+      const list = document.getElementById('projectsEarningsList');
+      if (myProjects.length === 0) {
+        list.innerHTML = '<div class="alert alert-info">لا توجد مشاريع مدفوعة بعد</div>';
+        return;
+      }
+      list.innerHTML = myProjects.map(proj => {
+        const prods = allPurchases.filter(p => p.projectId === proj.id);
+        const { gross, net, buyers } = calcForPurchases(prods);
+        return `
+          <div class="card mb-3 shadow-sm">
+            <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-2">
+              <div>
+                <h5 class="mb-1">${proj.title || 'مشروع'}</h5>
+                <small class="text-muted">السعر: ${proj.price || 0} ج.م</small>
+              </div>
+              <div class="text-end">
+                <div>إجمالي: <strong>${gross.toFixed(2)} ج.م</strong></div>
+                <div>صافي: <strong class="text-success">${net.toFixed(2)} ج.م</strong></div>
+                <div>مشترين: <strong>${buyers}</strong></div>
+              </div>
+              <button class="btn btn-outline-primary btn-sm view-details-btn" data-id="${proj.id}" data-title="${(proj.title||'').replace(/"/g,'&quot;')}">
+                <i class="fas fa-eye me-1"></i>عرض التفاصيل
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      list.querySelectorAll('.view-details-btn').forEach(btn => {
+        btn.addEventListener('click', () => openDetails(btn.dataset.id, btn.dataset.title));
+      });
+    }
+
+    function openDetails(projectId, title) {
+      currentDetailProjectId = projectId;
+      document.getElementById('detailsTitle').textContent = 'تفاصيل: ' + title;
+      document.getElementById('detailFrom').value = '';
+      document.getElementById('detailTo').value = '';
+      renderDetail();
+      new bootstrap.Modal(document.getElementById('earningsDetailsModal')).show();
+    }
+
+    function renderDetail() {
+      const from = document.getElementById('detailFrom').value || null;
+      const to = document.getElementById('detailTo').value || null;
+      const prods = allPurchases.filter(p => p.projectId === currentDetailProjectId && inRange(p._date, from, to));
+      const { gross, net, buyers } = calcForPurchases(prods);
+      document.getElementById('dGross').textContent = gross.toFixed(2) + ' ج.م';
+      document.getElementById('dNet').textContent = net.toFixed(2) + ' ج.م';
+      document.getElementById('dBuyers').textContent = buyers;
+
+      const list = document.getElementById('detailBuyersList');
+      if (prods.length === 0) {
+        list.innerHTML = '<div class="text-muted text-center">لا توجد مشتريات في هذه الفترة</div>';
+        return;
+      }
+      list.innerHTML = '<h6 class="mb-2">سجل عمليات الشراء</h6>' + prods.map(p => {
+        const dt = p._date ? p._date.toLocaleDateString('ar-EG') : '-';
+        const amt = parseFloat(p.price || p.amount)||0;
+        const rate = rateOf(p);
+        const netOne = (p.sellerNet != null && isFinite(parseFloat(p.sellerNet))) ? parseFloat(p.sellerNet) : amt * (1 - rate/100);
+        const payout = p.payoutSent
+          ? '<span class="badge bg-success">تم إرسال أرباحك لحسابك المالي</span>'
+          : '<span class="badge bg-warning text-dark">لم يتم إرسال الأرباح لحسابك البنكي بعد</span>';
+        return `<div class="border rounded p-2 mb-2">
+          <div class="d-flex justify-content-between flex-wrap gap-1">
+            <span>${p.buyerName || p.buyerEmail || 'مشتري'}</span>
+            <span>${amt.toFixed(2)} ج.م — ${dt}</span>
+          </div>
+          <div class="small mt-1">عمولة وقت الشراء: <strong>${rate}%</strong> | صافي لك: <strong class="text-success">${netOne.toFixed(2)} ج.م</strong></div>
+          <div class="mt-1">${payout}</div>
+          <div class="small text-muted">ID العملية: ${p.id || '-'}</div>
+        </div>`;
+      }).join('');
+    }
+
+    document.getElementById('applyFilterBtn').addEventListener('click', () => {
+      const from = document.getElementById('filterFrom').value || null;
+      const to = document.getElementById('filterTo').value || null;
+      renderTotals(from, to);
+    });
+    document.getElementById('clearFilterBtn').addEventListener('click', () => {
+      document.getElementById('filterFrom').value = '';
+      document.getElementById('filterTo').value = '';
+      renderTotals();
+    });
+    document.getElementById('detailFilterBtn').addEventListener('click', renderDetail);
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { location.href = 'index.html'; return; }
+      currentUser = user;
+      document.getElementById('authArea').innerHTML = `
+        <a href="account.html" class="btn btn-outline-primary btn-sm">حسابي</a>
+        <a href="my-creations.html" class="btn btn-outline-secondary btn-sm">إبداعاتي</a>
+      `;
+      loadData();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>المحتوى | محرك مصران</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="styles.css" rel="stylesheet">
+  <style>
+    .content-hero {
+      background: linear-gradient(125deg, #1a1410 0%, #3d2d14 50%, #8a6b14 100%);
+      border-radius: 18px;
+      padding: 1.75rem 1.5rem;
+      color: #fff;
+      margin-bottom: 1.5rem;
+      border: 1px solid rgba(232,197,71,0.35);
+    }
+    .content-hero h1 { font-weight: 800; font-size: 1.6rem; margin: 0 0 0.35rem; }
+    .promo-tabs { gap: 0.5rem; }
+    .promo-tab {
+      border-radius: 999px !important;
+      font-weight: 700;
+      padding: 0.55rem 1.25rem;
+    }
+    .playlist-filter-wrap {
+      background: var(--card, #fffcf7);
+      border: 1px solid rgba(201,162,39,0.28);
+      border-radius: 14px;
+      padding: 0.85rem 1rem;
+      margin-bottom: 1.25rem;
+    }
+    .content-card {
+      background: var(--card, #fffcf7);
+      border: 1px solid rgba(201,162,39,0.25);
+      border-radius: 16px;
+      overflow: hidden;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+      box-shadow: 0 6px 20px rgba(26,20,16,0.06);
+    }
+    .content-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 32px rgba(201,162,39,0.2);
+    }
+    .content-card img, .content-card .thumb-ph {
+      width: 100%;
+      aspect-ratio: 16/9;
+      object-fit: cover;
+      background: #1a1410;
+    }
+    .thumb-ph {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #e8c547;
+    }
+    .content-card-body { padding: 1rem; flex: 1; display: flex; flex-direction: column; }
+    .content-card-title {
+      font-weight: 800;
+      font-size: 1.05rem;
+      margin-bottom: 0.75rem;
+      line-height: 1.35;
+      color: #1a1410;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
+    <div class="container">
+      <a class="navbar-brand js-site-brand" href="index.html"><i class="fas fa-ankh me-2"></i>محرك مصران</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link" href="projects.html">المشاريع</a></li>
+          <li class="nav-item"><a class="nav-link nav-engine-download" href="engine.html"><i class="fas fa-download me-1"></i>تحميل المحرك</a></li>
+          <li class="nav-item"><a class="nav-link active" href="content.html"><i class="fas fa-play-circle me-1"></i>المحتوى</a></li>
+          <li class="nav-item"><a class="nav-link" href="index.html#about">عن المحرك</a></li>
+          <li class="nav-item"><a class="nav-link" href="support.html"><i class="fas fa-headset me-1"></i>الدعم <span class="nav-support-badge support-badge-dot d-none"></span></a></li>
+        </ul>
+        <div class="d-flex align-items-center gap-3" id="authArea"></div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container py-4">
+    <div class="content-hero">
+      <h1><i class="fas fa-play-circle me-2"></i>المحتوى التقديمي</h1>
+      <p class="mb-0 opacity-90 small">شروحات، عروض، وقوائم تشغيل — اختر المنصة وتصفّح براحتك</p>
+    </div>
+
+    <div class="d-flex flex-wrap justify-content-center promo-tabs mb-3">
+      <button type="button" class="btn btn-danger promo-tab active" data-type="youtube" id="tabYoutube">
+        <i class="fab fa-youtube me-1"></i>يوتيوب
+      </button>
+      <button type="button" class="btn btn-outline-primary promo-tab" data-type="facebook" id="tabFacebook">
+        <i class="fab fa-facebook me-1"></i>فيسبوك
+      </button>
+    </div>
+
+    <div class="playlist-filter-wrap d-none" id="playlistFilterWrap">
+      <div class="row g-2 align-items-center">
+        <div class="col-auto"><i class="fas fa-list text-warning"></i> <strong>قائمة التشغيل</strong></div>
+        <div class="col-md-5">
+          <select class="form-select" id="playlistFilter">
+            <option value="">كل فيديوهات يوتيوب</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div id="promoGrid" class="row g-3">
+      <div class="col-12 text-center text-muted py-5">جاري التحميل...</div>
+    </div>
+    <div class="d-flex justify-content-center gap-2 mt-4" id="promoPager"></div>
+  </div>
+
+  <div class="modal fade" id="promoDescModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content" style="border:1px solid rgba(201,162,39,0.35);border-radius:16px;">
+        <div class="modal-header" style="background:linear-gradient(145deg,#8a6b14,#c9a227);">
+          <h5 class="modal-title text-dark fw-bold" id="promoDescTitle">الوصف</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="promoDescBody" style="white-space:pre-wrap;"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module">
+    import { db, collection, getDocs, getDoc, doc, query, where, limit } from './firebase.js';
+    import './app.js';
+    import { cacheGet, cacheSet } from './localCache.js';
+
+    let currentType = 'youtube';
+    let page = 1;
+    const PAGE = 9;
+    let allItems = [];
+    let playlists = [];
+    let selectedPlaylist = '';
+
+    const filterWrap = document.getElementById('playlistFilterWrap');
+    const playlistFilter = document.getElementById('playlistFilter');
+
+    document.querySelectorAll('.promo-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.promo-tab').forEach(b => {
+          b.classList.remove('active', 'btn-danger', 'btn-primary');
+          b.classList.add(b.dataset.type === 'youtube' ? 'btn-outline-danger' : 'btn-outline-primary');
+        });
+        btn.classList.remove('btn-outline-danger', 'btn-outline-primary');
+        btn.classList.add(btn.dataset.type === 'youtube' ? 'btn-danger' : 'btn-primary', 'active');
+        currentType = btn.dataset.type;
+        selectedPlaylist = '';
+        if (playlistFilter) playlistFilter.value = '';
+        filterWrap?.classList.toggle('d-none', currentType !== 'youtube');
+        loadPromo(1);
+      });
+    });
+
+    playlistFilter?.addEventListener('change', () => {
+      selectedPlaylist = playlistFilter.value || '';
+      loadPromo(1);
+    });
+
+    async function loadPlaylists() {
+      try {
+        const snap = await getDocs(query(collection(db, 'promoPlaylists'), limit(50)));
+        playlists = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        if (playlistFilter) {
+          playlistFilter.innerHTML = '<option value="">كل فيديوهات يوتيوب</option>' +
+            playlists.map(p => `<option value="${p.id}">${p.name || 'قائمة'}</option>`).join('');
+        }
+      } catch (e) {
+        console.warn(e);
+        playlists = [];
+      }
+    }
+
+    async function loadPromo(p) {
+      page = p || 1;
+      const grid = document.getElementById('promoGrid');
+      const pager = document.getElementById('promoPager');
+      grid.innerHTML = '<div class="col-12 text-center text-muted py-4"><div class="spinner-border spinner-border-sm text-warning"></div></div>';
+      try {
+        if (currentType === 'youtube') {
+          filterWrap?.classList.remove('d-none');
+          if (!playlists.length) await loadPlaylists();
+        } else {
+          filterWrap?.classList.add('d-none');
+        }
+
+        const snap = await getDocs(query(
+          collection(db, 'promoContent'),
+          where('type', '==', currentType),
+          limit(120)
+        ));
+        allItems = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+          .sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
+
+        // فلتر قائمة التشغيل
+        if (currentType === 'youtube' && selectedPlaylist) {
+          const pl = playlists.find(x => x.id === selectedPlaylist);
+          const ids = new Set(pl?.itemIds || []);
+          allItems = allItems.filter(x => ids.has(x.id));
+        }
+
+        if (page <= 1) page = 1;
+        const start = (page - 1) * PAGE;
+        const slice = allItems.slice(start, start + PAGE);
+
+        if (!slice.length) {
+          grid.innerHTML = `<div class="col-12 text-center text-muted py-5">
+            <i class="fas fa-film fa-2x mb-2 opacity-50"></i>
+            <div>لا يوجد محتوى ${currentType === 'facebook' ? 'فيسبوك' : 'يوتيوب'}${selectedPlaylist ? ' في هذه القائمة' : ''} بعد.</div>
+          </div>`;
+          pager.innerHTML = '';
+          return;
+        }
+
+        const platformIcon = currentType === 'facebook'
+          ? '<i class="fab fa-facebook fa-2x"></i>'
+          : '<i class="fab fa-youtube fa-2x"></i>';
+
+        grid.innerHTML = slice.map(x => {
+          const thumb = x.thumbnail || '';
+          const url = x.videoUrl || '#';
+          const title = (x.title || '').replace(/</g, '&lt;');
+          const desc = (x.description || 'لا يوجد وصف').replace(/"/g, '&quot;');
+          return `<div class="col-md-6 col-lg-4">
+            <div class="content-card">
+              ${thumb
+                ? `<img src="${thumb}" alt="">`
+                : `<div class="thumb-ph">${platformIcon}</div>`}
+              <div class="content-card-body">
+                <div class="content-card-title">${title}</div>
+                <div class="d-flex flex-wrap gap-2 mt-auto">
+                  <button type="button" class="btn btn-sm btn-outline-secondary promo-desc-toggle">
+                    <i class="fas fa-align-right me-1"></i>عرض الوصف
+                  </button>
+                  <a class="btn btn-sm btn-primary-custom text-dark fw-bold" href="${url}" target="_blank" rel="noopener">
+                    <i class="fas fa-external-link-alt me-1"></i>تشغيل المحتوى
+                  </a>
+                </div>
+                <div class="promo-desc-panel d-none mt-2 p-2 small border rounded" style="background:rgba(201,162,39,0.08);border-color:rgba(201,162,39,0.25)!important;white-space:pre-wrap;">${(x.description || 'لا يوجد وصف').replace(/</g,'&lt;')}</div>
+              </div>
+            </div>
+          </div>`;
+        }).join('');
+
+        grid.querySelectorAll('.promo-desc-toggle').forEach(btn => {
+          btn.onclick = () => {
+            const panel = btn.closest('.content-card-body')?.querySelector('.promo-desc-panel');
+            if (!panel) return;
+            const open = !panel.classList.contains('d-none');
+            panel.classList.toggle('d-none', open);
+            btn.innerHTML = open
+              ? '<i class="fas fa-align-right me-1"></i>عرض الوصف'
+              : '<i class="fas fa-chevron-up me-1"></i>إخفاء الوصف';
+          };
+        });
+
+        const hasMore = start + PAGE < allItems.length;
+        pager.innerHTML = `
+          <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" id="pPrev" ${page <= 1 ? 'disabled' : ''}>السابق</button>
+          <span class="align-self-center px-2 small">صفحة ${page} <span class="text-muted">(1 = الأحدث)</span></span>
+          <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" id="pNext" ${hasMore ? '' : 'disabled'}>التالي</button>`;
+        document.getElementById('pPrev')?.addEventListener('click', () => loadPromo(page - 1));
+        document.getElementById('pNext')?.addEventListener('click', () => loadPromo(page + 1));
+      } catch (e) {
+        console.error(e);
+        grid.innerHTML = `<div class="col-12 alert alert-danger">${e.message || e}</div>`;
+      }
+    }
+
+    filterWrap?.classList.remove('d-none');
+    loadPlaylists().then(() => loadPromo(1));
+  </script>
+</body>
+</html>

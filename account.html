@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>حسابي | محرك مصران</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="styles.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
+    <div class="container">
+      <a class="navbar-brand js-site-brand" href="index.html"><i class="fas fa-ankh me-2"></i>محرك مصران</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link" href="projects.html">المشاريع</a></li>
+          <li class="nav-item"><a class="nav-link nav-engine-download" href="engine.html"><i class="fas fa-download me-1"></i>تحميل المحرك</a></li>
+          <li class="nav-item"><a class="nav-link" href="content.html"><i class="fas fa-play-circle me-1"></i>المحتوى</a></li>
+          <li class="nav-item"><a class="nav-link" href="index.html#about">عن المتجر</a></li>
+          <li class="nav-item"><a class="nav-link" href="support.html"><i class="fas fa-headset me-1"></i>الدعم <span class="nav-support-badge support-badge-dot d-none"></span></a></li>
+        </ul>
+        <div class="d-flex align-items-center gap-3" id="authArea"></div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container py-5">
+    <div class="account-card">
+      <div class="profile-header">
+        <div class="text-center">
+          <div class="profile-avatar-lg mx-auto" id="profileAvatar">?</div>
+          <div class="mt-2">
+            <input type="file" id="profilePhotoInput" accept="image/*" class="d-none">
+            <button type="button" class="btn btn-sm btn-outline-primary" id="uploadPhotoBtn">
+              <i class="fas fa-camera me-1"></i>رفع صورة الملف الشخصي
+            </button>
+            <div class="form-text small text-muted mt-1">ستظهر للناس في المنتجات وصفحة البائع · المقاس المطلوب: <strong>400 × 400</strong> بكسل (مربع). بعد الاختيار تقدر تكبّر/تصغّر مربع القص.</div>
+          </div>
+        </div>
+        <div>
+          <h3 class="mb-1" id="profileName">جاري التحميل...</h3>
+          <p class="text-muted mb-0" id="profileEmail"></p>
+          <p class="text-muted small mb-0 mt-1">ID: <span id="profileId" class="fw-semibold text-dark"></span>
+            <button type="button" class="btn btn-link btn-sm p-0 ms-1" id="copyIdBtn" title="نسخ ID"><i class="fas fa-copy"></i></button>
+          </p>
+        </div>
+      </div>
+
+      <hr>
+
+      <form id="accountForm">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">الاسم الكامل</label>
+            <input type="text" class="form-control" id="accName" readonly>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">البريد الإلكتروني</label>
+            <input type="email" class="form-control" id="accEmail" readonly>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">رقم الهاتف</label>
+            <input type="text" class="form-control" id="accPhone" readonly>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">نبذة قصيرة</label>
+            <input type="text" class="form-control" id="accBio" readonly>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2 mt-3 flex-wrap">
+          <button type="button" class="btn btn-outline-primary" id="editBtn">
+            <i class="fas fa-edit me-1"></i>تعديل البيانات
+          </button>
+          <button type="button" class="btn btn-success d-none" id="confirmEditBtn">
+            <i class="fas fa-check me-1"></i>تأكيد التعديل
+          </button>
+          <button type="button" class="btn btn-secondary d-none" id="cancelEditBtn">إلغاء</button>
+          <a href="sponsored.html" class="btn btn-outline-warning">
+            <i class="fas fa-bullhorn me-1"></i>إعلاناتي الممولة
+          </a>
+          <a href="my-creations.html" class="btn btn-outline-info">
+            <i class="fas fa-lightbulb me-1"></i>إبداعاتي
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Password Confirm Modal -->
+  <div class="modal fade" id="passwordConfirmModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">تأكيد التعديل</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p>أدخل كلمة المرور الحالية لتأكيد التعديلات:</p>
+          <input type="password" class="form-control" id="confirmPassword" placeholder="كلمة المرور">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+          <button type="button" class="btn btn-primary-custom text-white" id="doConfirmEdit">تأكيد</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+  <div class="spinner-overlay d-none" id="loadingOverlay">
+    <div class="spinner-border text-primary" style="width:3rem;height:3rem;"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module">
+    import { auth, db, onAuthStateChanged, doc, getDoc, updateDoc, reauthenticateWithCredential, EmailAuthProvider, updateProfile } from './firebase.js';
+    import { showToast, showLoading, getInitials, uploadToDriveScript, compressImageFile, deleteFromDriveScript } from './app.js';
+
+    let currentUser = null;
+    let originalData = {};
+    let currentPhotoURL = '';
+
+    function setAvatarUI(name, photoURL) {
+      const el = document.getElementById('profileAvatar');
+      if (!el) return;
+      if (photoURL) {
+        el.innerHTML = `<img src="${photoURL}" alt="avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+        el.style.background = 'transparent';
+        el.style.padding = '0';
+        el.style.overflow = 'hidden';
+      } else {
+        el.textContent = getInitials(name || '?');
+        el.style.background = '';
+        el.style.padding = '';
+        el.style.overflow = '';
+      }
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        location.href = 'index.html';
+        return;
+      }
+      currentUser = user;
+      let data = window.localCache?.get('user:' + user.uid);
+      if (!data) {
+        const snap = await getDoc(doc(db, 'users', user.uid));
+        data = snap.exists() ? snap.data() : {};
+        try { window.localCache?.set('user:' + user.uid, data); } catch(_){}
+      }
+      originalData = { ...data, email: user.email };
+      currentPhotoURL = data.photoURL || data.avatarUrl || '';
+
+      setAvatarUI(data.name || user.displayName, currentPhotoURL);
+      document.getElementById('profileName').textContent = data.name || user.displayName || 'مستخدم';
+      document.getElementById('profileEmail').textContent = user.email;
+      document.getElementById('profileId').textContent = user.uid;
+      document.getElementById('accName').value = data.name || '';
+      document.getElementById('accEmail').value = user.email;
+      document.getElementById('accPhone').value = data.phone || '';
+      document.getElementById('accBio').value = data.bio || '';
+
+      document.getElementById('copyIdBtn')?.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(user.uid);
+          showToast('تم نسخ الـ ID');
+        } catch (e) { showToast('تعذر النسخ', 'error'); }
+      });
+
+      // Fill auth area simply
+      document.getElementById('authArea').innerHTML = `
+        <a href="index.html" class="btn btn-outline-primary btn-sm">الرئيسية</a>
+        <a href="purchases.html" class="btn btn-outline-secondary btn-sm">مشترياتي</a>
+        <a href="earnings.html" class="btn btn-outline-success btn-sm">أرباحك</a>
+        <a href="sponsored.html" class="btn btn-outline-warning btn-sm"><i class="fas fa-bullhorn me-1"></i>إعلاناتي الممولة</a>
+      `;
+    });
+
+    // رفع صورة الملف الشخصي → درايف (مجلد المستخدم/الملف_الشخصي) + حفظ الرابط في users فقط (بدون قراءات إضافية للمنتجات)
+    document.getElementById('uploadPhotoBtn')?.addEventListener('click', () => {
+      document.getElementById('profilePhotoInput')?.click();
+    });
+
+    document.getElementById('profilePhotoInput')?.addEventListener('change', async (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      if (!file.type.startsWith('image/')) {
+        showToast('اختر صورة فقط', 'error');
+        return;
+      }
+      if (file.size > 8 * 1024 * 1024) {
+        showToast('حجم الصورة كبير — الحد 8 ميجا', 'error');
+        return;
+      }
+      let cropped;
+      try {
+        cropped = await window.openImageCropper(file, { aspect: 1, outSize: 400, title: 'قص صورة الملف الشخصي' });
+      } catch (err) {
+        if (err?.message !== 'cancelled') showToast(err?.message || 'فشل القص', 'error');
+        e.target.value = '';
+        return;
+      }
+      showLoading(true, 'جاري رفع صورة الملف الشخصي...');
+      try {
+        const compressed = await compressImageFile(cropped, 400, 0.8);
+        const oldFileId = originalData.photoFileId || '';
+        const up = await uploadToDriveScript(compressed, null, {
+          projectName: 'profile',
+          folderKind: 'profile',
+          userName: originalData.name || currentUser.displayName || '',
+          userId: currentUser.uid,
+          deleteOldInFolder: true
+        });
+        const photoURL = up.thumbUrl || up.url;
+        const photoFileId = up.fileId || '';
+        // احذف الصورة القديمة صراحة إن وُجدت
+        if (oldFileId && oldFileId !== photoFileId) {
+          try { await deleteFromDriveScript(oldFileId); } catch (_) {}
+        }
+        await updateDoc(doc(db, 'users', currentUser.uid), {
+          photoURL,
+          avatarUrl: photoURL,
+          photoFileId: photoFileId || null,
+          photoUpdatedAt: new Date().toISOString()
+        });
+        try { await updateProfile(currentUser, { photoURL }); } catch (_) {}
+        currentPhotoURL = photoURL;
+        originalData.photoURL = photoURL;
+        originalData.avatarUrl = photoURL;
+        setAvatarUI(originalData.name || currentUser.displayName, photoURL);
+        originalData.photoFileId = photoFileId;
+        try { window.localCache?.set('user:' + currentUser.uid, { ...originalData, photoURL, avatarUrl: photoURL, photoFileId }); } catch(_){}
+        showToast('تم رفع صورة الملف الشخصي بنجاح');
+      } catch (err) {
+        console.error(err);
+        showToast('فشل رفع الصورة: ' + (err.message || err), 'error');
+      } finally {
+        showLoading(false);
+        e.target.value = '';
+      }
+    });
+
+    let editing = false;
+    document.getElementById('editBtn').addEventListener('click', () => {
+      editing = true;
+      ['accName', 'accPhone', 'accBio'].forEach(id => {
+        document.getElementById(id).removeAttribute('readonly');
+      });
+      document.getElementById('editBtn').classList.add('d-none');
+      document.getElementById('confirmEditBtn').classList.remove('d-none');
+      document.getElementById('cancelEditBtn').classList.remove('d-none');
+    });
+
+    document.getElementById('cancelEditBtn').addEventListener('click', () => {
+      editing = false;
+      document.getElementById('accName').value = originalData.name || '';
+      document.getElementById('accPhone').value = originalData.phone || '';
+      document.getElementById('accBio').value = originalData.bio || '';
+      ['accName', 'accPhone', 'accBio'].forEach(id => {
+        document.getElementById(id).setAttribute('readonly', true);
+      });
+      document.getElementById('editBtn').classList.remove('d-none');
+      document.getElementById('confirmEditBtn').classList.add('d-none');
+      document.getElementById('cancelEditBtn').classList.add('d-none');
+    });
+
+    document.getElementById('confirmEditBtn').addEventListener('click', () => {
+      new bootstrap.Modal(document.getElementById('passwordConfirmModal')).show();
+    });
+
+    document.getElementById('doConfirmEdit').addEventListener('click', async () => {
+      const pass = document.getElementById('confirmPassword').value;
+      if (!pass) {
+        showToast('أدخل كلمة المرور', 'error');
+        return;
+      }
+      showLoading(true);
+      try {
+        const credential = EmailAuthProvider.credential(currentUser.email, pass);
+        await reauthenticateWithCredential(currentUser, credential);
+
+        const newName = document.getElementById('accName').value.trim();
+        const newPhone = document.getElementById('accPhone').value.trim();
+        const newBio = document.getElementById('accBio').value.trim();
+
+        await updateDoc(doc(db, 'users', currentUser.uid), {
+          name: newName,
+          phone: newPhone,
+          bio: newBio
+        });
+        await updateProfile(currentUser, { displayName: newName });
+
+        originalData = { ...originalData, name: newName, phone: newPhone, bio: newBio };
+        try { window.localCache?.set('user:' + currentUser.uid, originalData); } catch(_){}
+        document.getElementById('profileName').textContent = newName;
+        document.getElementById('profileAvatar').textContent = getInitials(newName);
+
+        ['accName', 'accPhone', 'accBio'].forEach(id => document.getElementById(id).setAttribute('readonly', true));
+        document.getElementById('editBtn').classList.remove('d-none');
+        document.getElementById('confirmEditBtn').classList.add('d-none');
+        document.getElementById('cancelEditBtn').classList.add('d-none');
+
+        bootstrap.Modal.getInstance(document.getElementById('passwordConfirmModal')).hide();
+        showToast('تم تحديث البيانات بنجاح');
+      } catch (err) {
+        showToast('كلمة المرور غير صحيحة أو حدث خطأ', 'error');
+      } finally {
+        showLoading(false);
+      }
+    });
+  </script>
+</body>
+</html>

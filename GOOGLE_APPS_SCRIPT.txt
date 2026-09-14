@@ -1,0 +1,184 @@
+================================================================================
+  سكربت Google Apps Script — محرك مصران
+  بدون كلمة سر إلزامية (SECRET فاضي)
+--------------------------------------------------------------------------------
+  SCRIPT_VERSION = 6
+
+  قاعدة الإصدار (إلزامية):
+  - أي تحديث أو تعديل على هذا الملف يجب زيادة SCRIPT_VERSION بمقدار 1.
+  - ممنوع تعديل المحتوى دون تحديث رقم الإصدار.
+================================================================================
+1) افتح https://script.google.com
+2) الصق الكود بالكامل تحت
+3) Deploy → Manage deployments → Edit → Version: New version
+4) Who has access: Anyone → Deploy → انسخ /exec
+5) في الأدمن → Drive: الصق الرابط + (بدون SECRET) → احفظ
+
+--------------------------------------------------------------------------------
+هيكل الدرايف:
+
+مجلد مصران (الجذر)
+ ├── اسم_المستخدم/
+ │    ├── الملف_الشخصي/
+ │    ├── التحويلات/
+ │    └── اسم_المشروع/ الصور|الملفات
+ └── _Backups/
+      └── 2026-03-14_12-30-00/
+           ├── meta.json
+           ├── users.json
+           ├── projects.json
+           └── ...
+
+--------------------------------------------------------------------------------
+الكود:
+--------------------------------------------------------------------------------
+
+const FOLDER_ID = '1r_pMH_KZH-YlrllbqK0CbMvew00BhGqG';
+const SECRET = ''; // اختياري — اتركه فاضي
+const MAX_BYTES = 15 * 1024 * 1024;
+const SCRIPT_VERSION = 6;
+
+function doPost(e) {
+  try {
+    const data = JSON.parse(e.postData.contents || '{}');
+    // بدون كلمة سر إلزامية (حسب طلب المشروع) — الرابط /exec هو الحماية الأساسية
+    // لو حطيت SECRET في السكربت وأرسلت secret مختلف يُرفض؛ لو فاضي يُقبل
+    if (SECRET && data.secret && data.secret !== SECRET) {
+      return json_({ ok: false, error: 'غير مصرح' });
+    }
+
+    // ---- حذف ملف ----
+    if (data.action === 'delete') {
+      const delId = String(data.fileId || '').trim();
+      if (!delId) return json_({ ok: false, error: 'fileId مطلوب للحذف' });
+      try {
+        DriveApp.getFileById(delId).setTrashed(true);
+        return json_({ ok: true, deleted: delId });
+      } catch (err) {
+        return json_({ ok: false, error: 'تعذر الحذف: ' + String(err) });
+      }
+    }
+
+    // ---- إنشاء مجلد نسخة احتياطية ----
+    if (data.action === 'backupInit') {
+      const root = DriveApp.getFolderById(FOLDER_ID);
+      const backups = getOrCreateFolder_(root, '_Backups');
+      const stamp = String(data.stamp || Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'Africa/Cairo', 'yyyy-MM-dd_HH-mm-ss'));
+      const folder = backups.createFolder(stamp);
+      return json_({
+        ok: true,
+        scriptVersion: SCRIPT_VERSION,
+        folderId: folder.getId(),
+        folderUrl: folder.getUrl(),
+        stamp: stamp
+      });
+    }
+
+    // ---- كتابة ملف JSON داخل مجلد Backup ----
+    if (data.action === 'backupWrite') {
+      const folderId = String(data.folderId || '').trim();
+      if (!folderId) return json_({ ok: false, error: 'folderId مطلوب' });
+      const fileName = safeName_(data.fileName || 'data.json');
+      const text = data.jsonText || data.text || '';
+      if (!text) return json_({ ok: false, error: 'لا يوجد محتوى' });
+      // حد تقريبي لحجم النص
+      if (text.length > MAX_BYTES * 1.4) {
+        return json_({ ok: false, error: 'الملف كبير جداً — قسّمه' });
+      }
+      const folder = DriveApp.getFolderById(folderId);
+      const blob = Utilities.newBlob(text, 'application/json', fileName);
+      const file = folder.createFile(blob);
+      // النسخ الاحتياطية تبقى خاصة بحسابك (بدون Anyone)
+      return json_({
+        ok: true,
+        fileId: file.getId(),
+        fileName: file.getName(),
+        url: file.getUrl()
+      });
+    }
+
+    // ---- رفع ملف عادي (صور/محرك/...) ----
+    const b64 = data.base64 || '';
+    if (!b64) return json_({ ok: false, error: 'لا يوجد ملف' });
+
+    const sizeApprox = Math.floor(b64.length * 0.75);
+    if (sizeApprox > MAX_BYTES) {
+      return json_({ ok: false, error: 'الملف أكبر من الحد المسموح' });
+    }
+
+    const userKey = safeName_(data.userName || data.userId || 'unknown_user');
+    const projectName = safeName_(data.projectName || '');
+    const kind = String(data.folderKind || 'files');
+    const fileName = safeName_(data.fileName || 'file');
+    const mime = data.mimeType || 'application/octet-stream';
+
+    const root = DriveApp.getFolderById(FOLDER_ID);
+    const userFolder = getOrCreateFolder_(root, userKey);
+
+    let targetFolder;
+    let projectFolderUrl = '';
+
+    if (kind === 'profile' || kind === 'الملف_الشخصي' || kind === 'avatar') {
+      targetFolder = getOrCreateFolder_(userFolder, 'الملف_الشخصي');
+      if (data.deleteOldInFolder) {
+        try {
+          const files = targetFolder.getFiles();
+          while (files.hasNext()) files.next().setTrashed(true);
+        } catch (e) {}
+      }
+    } else if (kind === 'transfers' || kind === 'التحويلات') {
+      targetFolder = getOrCreateFolder_(userFolder, 'التحويلات');
+    } else if (kind === 'backup') {
+      const backups = getOrCreateFolder_(root, '_Backups');
+      targetFolder = getOrCreateFolder_(backups, projectName || 'manual');
+    } else {
+      const pName = projectName || 'project';
+      const projectFolder = getOrCreateFolder_(userFolder, pName);
+      projectFolderUrl = projectFolder.getUrl();
+      const subName = (kind === 'images' || kind === 'الصور') ? 'الصور' : 'الملفات';
+      targetFolder = getOrCreateFolder_(projectFolder, subName);
+    }
+
+    const blob = Utilities.newBlob(Utilities.base64Decode(b64), mime, fileName);
+    const file = targetFolder.createFile(blob);
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+
+    const id = file.getId();
+    return json_({
+      ok: true,
+      fileId: id,
+      url: 'https://drive.google.com/file/d/' + id + '/view',
+      thumbUrl: 'https://drive.google.com/thumbnail?id=' + id + '&sz=w1000',
+      projectFolderUrl: projectFolderUrl || userFolder.getUrl(),
+      userFolderUrl: userFolder.getUrl(),
+      scriptVersion: SCRIPT_VERSION
+    });
+  } catch (err) {
+    return json_({ ok: false, error: String(err) });
+  }
+}
+
+function getOrCreateFolder_(parent, name) {
+  const it = parent.getFoldersByName(name);
+  if (it.hasNext()) return it.next();
+  return parent.createFolder(name);
+}
+
+function safeName_(s) {
+  return String(s || 'file')
+    .replace(/[\\/:*?"<>|]+/g, '_')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .substring(0, 80) || 'file';
+}
+
+function json_(obj) {
+  return ContentService
+    .createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function testFolders() {
+  const root = DriveApp.getFolderById(FOLDER_ID);
+  Logger.log('Root: ' + root.getName() + ' v' + SCRIPT_VERSION);
+}

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>إعلاناتي الممولة | محرك مصران</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="styles.css" rel="stylesheet">
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
+    <div class="container">
+      <a class="navbar-brand js-site-brand" href="index.html"><i class="fas fa-ankh me-2"></i>محرك مصران</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link js-projects-link" href="projects.html">المشاريع</a></li>
+          <li class="nav-item"><a class="nav-link nav-engine-download" href="engine.html"><i class="fas fa-download me-1"></i>تحميل المحرك</a></li>
+          <li class="nav-item"><a class="nav-link" href="content.html"><i class="fas fa-play-circle me-1"></i>المحتوى</a></li>
+          <li class="nav-item"><a class="nav-link" href="index.html#about">عن المتجر</a></li>
+          <li class="nav-item"><a class="nav-link" href="support.html"><i class="fas fa-headset me-1"></i>الدعم <span class="nav-support-badge support-badge-dot d-none"></span></a></li>
+        </ul>
+        <div class="d-flex align-items-center gap-3" id="authArea"></div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container py-5">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+      <h2 class="mb-0"><i class="fas fa-bullhorn me-2"></i>إعلاناتي الممولة</h2>
+      <button type="button" class="btn btn-primary-custom text-white" id="addSponsoredBtn">
+        <i class="fas fa-plus me-1"></i>إضافة إعلان ممول
+      </button>
+    </div>
+
+    <div class="alert alert-info">
+      <i class="fas fa-info-circle me-1"></i>
+      يمكنك تفعيل إعلان ممول لمنتجاتك لزيادة الظهور في نتائج البحث والصفحة الرئيسية.
+      <strong>ملاحظة:</strong> إلغاء التفعيل لا يسترجع أي أموال.
+    </div>
+
+    <div id="sponsoredList">
+      <div class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+        <p class="mt-2 text-muted">جاري تحميل إعلاناتك...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- تأكيد إلغاء التفعيل -->
+  <div class="modal fade" id="cancelSponsoredModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-warning">
+          <h5 class="modal-title">تأكيد إلغاء التفعيل</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-2">لو ألغيت تفعيل الإعلان <strong>فلن يتم استرجاع أي فلوس</strong> في رصيد حسابك.</p>
+          <p class="text-muted small mb-0">هل أنت متأكد من إلغاء التفعيل؟</p>
+          <input type="hidden" id="cancelSponsoredId">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">تراجع</button>
+          <button type="button" class="btn btn-danger" id="confirmCancelSponsored">تأكيد الإلغاء</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Placeholder: إعدادات إضافة إعلان (سنخططها معاً لاحقاً) -->
+  <div class="modal fade" id="addSponsoredModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">إضافة إعلان ممول</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-secondary mb-0">
+            <i class="fas fa-tools me-1"></i>
+            إعدادات إضافة الإعلان (اختيار المنتج، المدة، الأولوية، السعر...) قيد التخطيط معاً لعمل حساب وخطة قوية.
+            <br>الزر جاهز والصفحة جاهزة — التفاصيل قريباً.
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module">
+    import { auth, db, onAuthStateChanged } from './firebase.js';
+    import {
+      collection, query, where, orderBy, limit, getDocs, doc, updateDoc, serverTimestamp
+    } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js';
+    import { softFetch, cacheGet, cacheSet, networkInvalidate, showToast } from './app.js';
+
+    let currentUser = null;
+
+    function formatDate(ts) {
+      if (!ts) return '—';
+      try {
+        const d = ts.toDate ? ts.toDate() : new Date(ts);
+        return d.toLocaleDateString('ar-EG', { year: 'numeric', month: 'short', day: 'numeric' });
+      } catch { return '—'; }
+    }
+
+    function statusBadge(status, endAt) {
+      const now = Date.now();
+      const end = endAt?.toDate ? endAt.toDate().getTime() : (endAt ? new Date(endAt).getTime() : 0);
+      if (status === 'active' && end && end < now) return '<span class="badge bg-secondary">منتهي</span>';
+      if (status === 'active') return '<span class="badge bg-success">مفعّل</span>';
+      if (status === 'cancelled_by_user') return '<span class="badge bg-warning text-dark">ألغيته أنت</span>';
+      if (status === 'cancelled_by_admin') return '<span class="badge bg-danger">ألغاه الأدمن</span>';
+      if (status === 'expired') return '<span class="badge bg-secondary">منتهي</span>';
+      return `<span class="badge bg-light text-dark">${status || '—'}</span>`;
+    }
+
+    async function loadMySponsored() {
+      const list = document.getElementById('sponsoredList');
+      if (!currentUser) {
+        list.innerHTML = '<div class="alert alert-warning">يجب تسجيل الدخول أولاً</div>';
+        return;
+      }
+      try {
+        const { data: ads } = await softFetch(`sponsored:user:${currentUser.uid}`, async () => {
+          const q = query(
+            collection(db, 'sponsored_ads'),
+            where('userId', '==', currentUser.uid),
+            orderBy('createdAt', 'desc'),
+            limit(50)
+          );
+          const snap = await getDocs(q);
+          return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        }, { maxAgeMs: 60 * 1000 });
+
+        if (!ads || !ads.length) {
+          list.innerHTML = `
+            <div class="text-center py-5 text-muted">
+              <i class="fas fa-bullhorn fa-3x mb-3 opacity-50"></i>
+              <p>لا توجد إعلانات ممولة بعد</p>
+              <button type="button" class="btn btn-primary-custom text-white" id="addSponsoredEmptyBtn">
+                <i class="fas fa-plus me-1"></i>إضافة أول إعلان ممول
+              </button>
+            </div>`;
+          document.getElementById('addSponsoredEmptyBtn')?.addEventListener('click', () => {
+            new bootstrap.Modal(document.getElementById('addSponsoredModal')).show();
+          });
+          return;
+        }
+
+        list.innerHTML = ads.map(ad => `
+          <div class="card mb-3 shadow-sm">
+            <div class="card-body">
+              <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+                <div>
+                  <h5 class="mb-1">${ad.productTitle || 'منتج'} <small class="text-muted">#${ad.productId || ad.id}</small></h5>
+                  <div class="small text-muted mb-2">
+                    المدة: ${ad.durationDays || '—'} يوم · 
+                    الأولوية: ${ad.priority || 'عادي'} · 
+                    السعر المدفوع: ${ad.pricePaid != null ? ad.pricePaid + ' ج' : '—'}
+                  </div>
+                  <div class="small">
+                    من ${formatDate(ad.startAt)} → إلى ${formatDate(ad.endAt)}
+                  </div>
+                </div>
+                <div class="text-end">
+                  ${statusBadge(ad.status, ad.endAt)}
+                  ${ad.status === 'active' ? `
+                    <div class="mt-2">
+                      <button type="button" class="btn btn-sm btn-outline-danger cancel-sponsored-btn" data-id="${ad.id}">
+                        <i class="fas fa-times me-1"></i>إلغاء التفعيل
+                      </button>
+                    </div>` : ''}
+                </div>
+              </div>
+            </div>
+          </div>
+        `).join('');
+
+        list.querySelectorAll('.cancel-sponsored-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            document.getElementById('cancelSponsoredId').value = btn.dataset.id;
+            new bootstrap.Modal(document.getElementById('cancelSponsoredModal')).show();
+          });
+        });
+      } catch (e) {
+        console.error(e);
+        list.innerHTML = '<div class="alert alert-danger">حدث خطأ في تحميل الإعلانات. تأكد من وجود فهرس Firestore مناسب (userId + createdAt).</div>';
+      }
+    }
+
+    document.getElementById('addSponsoredBtn')?.addEventListener('click', () => {
+      new bootstrap.Modal(document.getElementById('addSponsoredModal')).show();
+    });
+
+    document.getElementById('confirmCancelSponsored')?.addEventListener('click', async () => {
+      const id = document.getElementById('cancelSponsoredId').value;
+      if (!id || !currentUser) return;
+      const btn = document.getElementById('confirmCancelSponsored');
+      btn.disabled = true;
+      try {
+        await updateDoc(doc(db, 'sponsored_ads', id), {
+          status: 'cancelled_by_user',
+          cancelledAt: serverTimestamp(),
+          cancelledBy: currentUser.uid,
+          updatedAt: serverTimestamp()
+        });
+        networkInvalidate(`sponsored:user:${currentUser.uid}`);
+        bootstrap.Modal.getInstance(document.getElementById('cancelSponsoredModal'))?.hide();
+        showToast('تم إلغاء تفعيل الإعلان (بدون استرجاع)');
+        loadMySponsored();
+      } catch (e) {
+        console.error(e);
+        showToast('فشل الإلغاء', 'error');
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    onAuthStateChanged(auth, async (user) => {
+      currentUser = user;
+      if (!user) {
+        document.getElementById('sponsoredList').innerHTML = '<div class="alert alert-warning">يجب تسجيل الدخول أولاً. <a href="index.html">العودة</a></div>';
+        document.getElementById('authArea').innerHTML = '<a href="index.html" class="btn btn-outline-primary btn-sm">تسجيل الدخول</a>';
+        return;
+      }
+      document.getElementById('authArea').innerHTML = `
+        <a href="account.html" class="btn btn-outline-primary btn-sm">حسابي</a>
+        <a href="my-creations.html" class="btn btn-outline-secondary btn-sm">إبداعاتي</a>
+        <a href="earnings.html" class="btn btn-outline-success btn-sm">أرباحك</a>
+      `;
+      loadMySponsored();
+    });
+
+    // branding
+    import('./app.js').then(m => {
+      if (m.fetchEngineSettings && m.applySiteBranding) {
+        m.fetchEngineSettings().then(d => m.applySiteBranding(d));
+      }
+    }).catch(() => {});
+  </script>
+</body>
+</html>

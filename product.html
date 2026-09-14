@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تفاصيل المشروع | محرك مصران</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="styles.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
+    <div class="container">
+      <a class="navbar-brand js-site-brand" href="index.html"><i class="fas fa-ankh me-2"></i>محرك مصران</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link" href="projects.html">المشاريع</a></li>
+          <li class="nav-item"><a class="nav-link nav-engine-download" href="engine.html"><i class="fas fa-download me-1"></i>تحميل المحرك</a></li>
+          <li class="nav-item"><a class="nav-link" href="content.html"><i class="fas fa-play-circle me-1"></i>المحتوى</a></li>
+          <li class="nav-item"><a class="nav-link" href="index.html#about">عن المتجر</a></li>
+          <li class="nav-item"><a class="nav-link" href="support.html"><i class="fas fa-headset me-1"></i>الدعم <span class="nav-support-badge support-badge-dot d-none"></span></a></li>
+        </ul>
+        <div class="d-flex align-items-center gap-3" id="authArea"></div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container py-5">
+    <div id="productContent">
+      <div class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+        <p class="mt-2">جاري التحميل...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Buy / Instructions Modal -->
+  <div class="modal fade" id="buyModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">شراء المنتج</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-warning">
+            <strong>يجب قراءة التعليمات قبل الشراء:</strong>
+            <div id="buyInstructions" class="mt-2">
+              <!-- سيتم ملؤها لاحقاً -->
+              التعليمات الخاصة بالشراء سيتم إضافتها هنا من قبل المطور.
+            </div>
+          </div>
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" id="readInstructions">
+            <label class="form-check-label" for="readInstructions">قرأت التعليمات وأوافق عليها</label>
+          </div>
+          <div id="paymentInfo" class="d-none">
+            <p>حوّل المبلغ المطلوب إلى الرقم التالي (رقم المطور حالياً):</p>
+            <div class="alert alert-info">
+              <strong id="devPaymentNumber">سيتم إضافته لاحقاً</strong><br>
+              المبلغ: <strong id="payAmount"></strong> ج.م
+            </div>
+            <div class="mb-3">
+              <label class="form-label">رابط صورة التحويل من جوجل درايف *</label>
+              <input type="url" class="form-control" id="transferImageLink" placeholder="ارفع صورة التحويل على درايف والصق الرابط">
+              <small class="text-muted">ارفع صورة التحويل على حسابك في درايف وشاركها</small>
+            </div>
+            <button class="btn btn-success w-100" id="confirmPurchaseBtn">تأكيد وإرسال الطلب</button>
+          </div>
+          <button class="btn btn-primary-custom text-white w-100" id="proceedBuyBtn" disabled>متابعة الشراء</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+  <div class="spinner-overlay d-none" id="loadingOverlay">
+    <div class="spinner-border text-primary" style="width:3rem;height:3rem;"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module">
+    import { auth, db, onAuthStateChanged, doc, getDoc, getDocs, addDoc, collection, query, where, limit, serverTimestamp, updateDoc, increment } from './firebase.js';
+    import { showToast as appToast, showLoading as appLoading, moderateText, linkifyText } from './app.js';
+
+    // دوال مساعدة محلية عشان منعتمدش على app.js
+    function showToast(message, type = 'success') {
+      const container = document.querySelector('.toast-container');
+      if (!container) { console.log(message); return; }
+      const id = 'toast-' + Date.now();
+      const bg = type === 'success' ? 'bg-success' : 'bg-danger';
+      container.insertAdjacentHTML('beforeend', `
+        <div id="${id}" class="toast align-items-center text-white ${bg} border-0" role="alert">
+          <div class="d-flex">
+            <div class="toast-body">${message}</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+          </div>
+        </div>`);
+      const toastEl = document.getElementById(id);
+      new bootstrap.Toast(toastEl, { delay: 4000 }).show();
+    }
+    function showLoading(show = true, message = 'جاري التحميل...', percent = null) {
+      // استخدم النسخة الاحترافية من app.js إن وُجدت
+      if (typeof appLoading === 'function') {
+        try { appLoading(show, message, percent); return; } catch(e) {}
+      }
+      let el = document.getElementById('loadingOverlay');
+      if (!el && show) {
+        el = document.createElement('div');
+        el.id = 'loadingOverlay';
+        el.className = 'spinner-overlay';
+        el.innerHTML = `<div class="upload-loader-card">
+          <div class="spinner-border text-primary mb-3" style="width:3rem;height:3rem;"></div>
+          <div class="upload-loader-msg" id="loadingOverlayMsg"></div>
+          <div class="upload-loader-bar mt-3 d-none" id="loadingOverlayBarWrap">
+            <div class="progress" style="height:10px;width:240px;background:rgba(255,255,255,0.15);">
+              <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning" id="loadingOverlayBar" style="width:0%"></div>
+            </div>
+            <div class="upload-loader-pct mt-2" id="loadingOverlayPct">0%</div>
+          </div>
+        </div>`;
+        document.body.appendChild(el);
+      }
+      if (!el) return;
+      if (show) {
+        el.classList.remove('d-none');
+        const msgEl = document.getElementById('loadingOverlayMsg');
+        if (msgEl) msgEl.textContent = message || 'جاري التحميل...';
+        const barWrap = document.getElementById('loadingOverlayBarWrap');
+        const bar = document.getElementById('loadingOverlayBar');
+        const pctEl = document.getElementById('loadingOverlayPct');
+        if (percent !== null && percent !== undefined && barWrap && bar && pctEl) {
+          barWrap.classList.remove('d-none');
+          const pct = Math.max(0, Math.min(100, Math.round(percent)));
+          bar.style.width = pct + '%';
+          pctEl.textContent = pct + '%';
+        } else if (barWrap) barWrap.classList.add('d-none');
+      } else {
+        el.classList.add('d-none');
+      }
+    }
+
+    const urlParams = new URLSearchParams(location.search);
+    const projectId = urlParams.get('id');
+    let projectData = null;
+    let currentUser = null;
+
+    onAuthStateChanged(auth, (user) => { currentUser = user; if (projectData) renderProduct(); });
+
+    async function loadProduct() {
+      if (!projectId) {
+        document.getElementById('productContent').innerHTML = '<div class="alert alert-danger">معرف المشروع غير موجود</div>';
+        return;
+      }
+      try {
+        // عرض سريع من الكاش ثم إعادة تحقق من الشبكة (عشان التعديلات تظهر)
+        let projectDataCached = (window.localCache && window.localCache.get('product:' + projectId)) || null;
+        if (projectDataCached && (projectDataCached.id || projectDataCached.title)) {
+          projectData = { id: projectId, ...projectDataCached, id: projectId };
+          renderProduct();
+        }
+        const snap = await getDoc(doc(db, 'projects', projectId));
+        if (!snap.exists()) {
+          if (!projectData) {
+            document.getElementById('productContent').innerHTML = '<div class="alert alert-warning">المشروع غير موجود أو تم حذفه</div>';
+          }
+          return;
+        }
+        projectData = { id: snap.id, ...snap.data() };
+        try { window.localCache?.set('product:' + projectId, projectData); } catch(_){}
+        renderProduct();
+      } catch (err) {
+        console.error(err);
+        document.getElementById('productContent').innerHTML = `<div class="alert alert-danger">
+          خطأ في التحميل<br><small>${err.message || err}</small>
+        </div>`;
+      }
+    }
+
+    let hasPurchased = false;
+    let hasPending = false;
+    let isOwner = false;
+
+    function appendPurchaseToLocalCache(purchaseId, data) {
+      try {
+        if (!currentUser) return;
+        const pKey = 'purchases:' + currentUser.uid;
+        let list = window.localCache?.get(pKey);
+        if (!Array.isArray(list)) list = [];
+        list.unshift({ id: purchaseId || ('local_' + Date.now()), data: data });
+        window.localCache?.set(pKey, list);
+      } catch (_) {}
+    }
+
+    async function checkPurchase() {
+      hasPurchased = false;
+      hasPending = false;
+      isOwner = false;
+      if (!currentUser || !projectId) return;
+      isOwner = projectData && projectData.sellerId === currentUser.uid;
+      try {
+        // قراءة مشتريات هذا المنتج لهذا المشتري فقط (مش كل مشترياته)
+        let snap;
+        try {
+          snap = await getDocs(query(
+            collection(db, 'purchases'),
+            where('buyerId', '==', currentUser.uid),
+            where('projectId', '==', projectId),
+            limit(5)
+          ));
+        } catch (_) {
+          // fallback لو مفيش composite index
+          snap = await getDocs(query(
+            collection(db, 'purchases'),
+            where('buyerId', '==', currentUser.uid),
+            limit(40)
+          ));
+        }
+        snap.docs.forEach(d => {
+          const x = d.data();
+          if (x.projectId === projectId) {
+            if (x.status === 'approved' || x.status === 'owned_free') hasPurchased = true;
+            if (x.status === 'pending') hasPending = true;
+          }
+        });
+      } catch(e) {}
+    }
+
+    async function resolveSellerPhoto(p) {
+      if (p.sellerPhoto) return p.sellerPhoto;
+      if (!p.sellerId) return '';
+      try {
+        if (p.sellerId === 'official' || p.isOfficial) {
+          try {
+            const cached = sessionStorage.getItem('officialProfilePhoto');
+            if (cached) {
+              p.sellerPhoto = cached;
+              p.sellerName = 'محرك مصران';
+              return cached;
+            }
+          } catch (_) {}
+          const oSnap = await getDoc(doc(db, 'settings', 'officialProfile'));
+          if (oSnap.exists()) {
+            const o = oSnap.data();
+            const url = o.photoURL || o.avatarUrl || '';
+            if (url) {
+              p.sellerPhoto = url;
+              try { sessionStorage.setItem('officialProfilePhoto', url); } catch (_) {}
+              updateDoc(doc(db, 'projects', projectId), { sellerPhoto: url, sellerName: 'محرك مصران' }).catch(() => {});
+            }
+            p.sellerName = 'محرك مصران';
+            return url;
+          }
+          p.sellerName = 'محرك مصران';
+          return '';
+        }
+        const uSnap = await getDoc(doc(db, 'users', p.sellerId));
+        if (uSnap.exists()) {
+          const u = uSnap.data();
+          const url = u.photoURL || u.avatarUrl || '';
+          if (url) {
+            p.sellerPhoto = url;
+            updateDoc(doc(db, 'projects', projectId), { sellerPhoto: url }).catch(() => {});
+          }
+          return url;
+        }
+      } catch (_) {}
+      return '';
+    }
+
+    
+    function getProductShareUrl() {
+      return location.origin + location.pathname.replace(/[^/]*$/, '') + 'product.html?id=' + encodeURIComponent(projectId);
+    }
+    function getProductShareText() {
+      const title = (projectData && projectData.title) || 'منتج';
+      return title + ' — محرك مصران\n' + getProductShareUrl();
+    }
+    async function copyShareUrl() {
+      const full = getProductShareUrl();
+      const shortLabel = 'Misran_store/' + projectId;
+      try {
+        await navigator.clipboard.writeText(full);
+        showToast('تم نسخ الرابط: ' + shortLabel);
+      } catch {
+        try {
+          const ta = document.createElement('textarea');
+          ta.value = full;
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          ta.remove();
+          showToast('تم نسخ الرابط');
+        } catch {
+          showToast('تعذر النسخ', 'error');
+        }
+      }
+    }
+    function openShareApp(app) {
+      const url = encodeURIComponent(getProductShareUrl());
+      const text = encodeURIComponent(getProductShareText());
+      let href = '';
+      if (app === 'whatsapp') href = 'https://wa.me/?text=' + text;
+      else if (app === 'telegram') href = 'https://t.me/share/url?url=' + url + '&text=' + encodeURIComponent((projectData && projectData.title) || 'محرك مصران');
+      else if (app === 'facebook') href = 'https://www.facebook.com/sharer/sharer.php?u=' + url;
+      else if (app === 'twitter') href = 'https://twitter.com/intent/tweet?url=' + url + '&text=' + encodeURIComponent((projectData && projectData.title) || '');
+      else if (app === 'messenger') href = 'https://www.facebook.com/dialog/send?link=' + url + '&app_id=291494419107518&redirect_uri=' + url;
+      else if (app === 'more') {
+        if (navigator.share) {
+          navigator.share({ title: (projectData && projectData.title) || 'محرك مصران', text: getProductShareText(), url: getProductShareUrl() }).catch(() => {});
+          return;
+        }
+        copyShareUrl();
+        return;
+      }
+      if (href) window.open(href, '_blank', 'noopener,noreferrer');
+    }
+    function bindProductShareLink() {
+      const sheet = document.getElementById('shareSheet');
+      const openBtn = document.getElementById('openShareSheetBtn');
+      if (!openBtn || openBtn.dataset.bound) return;
+      openBtn.dataset.bound = '1';
+      const openSheet = () => { if (sheet) sheet.classList.remove('d-none'); };
+      const closeSheet = () => { if (sheet) sheet.classList.add('d-none'); };
+      openBtn.onclick = openSheet;
+      document.getElementById('closeShareSheetBtn')?.addEventListener('click', closeSheet);
+      document.getElementById('shareSheetBackdrop')?.addEventListener('click', closeSheet);
+      document.getElementById('copyProductLinkBtn')?.addEventListener('click', () => { copyShareUrl(); });
+      document.querySelectorAll('.share-app-btn').forEach(b => {
+        b.addEventListener('click', () => openShareApp(b.dataset.app));
+      });
+    }
+
+    async function renderProduct() {
+      await checkPurchase();
+      const p = projectData;
+      // منتج محذوف: يظهر فقط للمشتري/المالك (منطق الشبكة) — المحلي لا يلغي المشتريات
+      if (p && p.status === 'deleted' && !hasPurchased && !isOwner) {
+        document.getElementById('productContent').innerHTML = '<div class="alert alert-warning">هذا المنتج لم يعد متاحًا للعرض العام (تم حذفه).</div>';
+        return;
+      }
+      // لو المشتري: نستخدم snapshot المحفوظ على عملية الشراء لو الناقص من المنتج الحي
+      if (p && p.status === 'deleted' && hasPurchased) {
+        try {
+          const pKey = 'purchases:' + (currentUser && currentUser.uid);
+          const list = (window.localCache && window.localCache.get(pKey)) || [];
+          const row = Array.isArray(list) ? list.find(x => (x.data && (x.data.projectId === projectId)) || x.projectId === projectId) : null;
+          const snap = row?.data?.snapshot || row?.snapshot;
+          if (snap) {
+            p.title = p.title || snap.title;
+            p.description = p.description || snap.description;
+            p.thumbnail = p.thumbnail || snap.thumbnail;
+            p.thumbnailDirect = p.thumbnailDirect || snap.thumbnailDirect;
+            p.filesLink = p.filesLink || snap.filesLink;
+            p.files = p.files || snap.files;
+          }
+        } catch (_) {}
+      }
+      // حل صورة البائع للمنتجات القديمة مرة واحدة فقط
+      if (!p.sellerPhoto) p.sellerPhoto = await resolveSellerPhoto(p);
+      const isFree = p.isFree || p.price === 0;
+      const canDownload = hasPurchased || isOwner;
+
+      // السعر والعرض يظهران دائماً (حتى للمشتري/المالك) عشان المشاركة والشفافية
+      let priceHtml = '';
+      if (isFree) {
+        priceHtml = '<span class="badge bg-primary fs-5">مجاني</span>';
+      } else if (typeof window.isProductOnSale === 'function' && window.isProductOnSale(p)) {
+        const orig = parseFloat(p.originalPrice) || 0;
+        const cur = parseFloat(p.price) || 0;
+        const left = (typeof window.formatSaleRemaining === 'function') ? window.formatSaleRemaining(p) : '';
+        priceHtml = `<div class="sale-price-box">
+          <span class="text-decoration-line-through text-muted me-2" style="text-decoration-thickness:2px;font-size:1.1rem;">${orig} ج.م</span>
+          <span class="text-danger fw-bold me-2" style="font-size:1.6rem;">${cur} ج.م</span>
+          <span class="badge bg-danger">عرض</span>
+          ${left ? `<div class="small text-muted mt-1"><i class="fas fa-clock me-1"></i>تبقى ${left} على انتهاء العرض</div>` : ''}
+        </div>`;
+      } else if (typeof window.priceHtmlForProduct === 'function') {
+        priceHtml = window.priceHtmlForProduct(p);
+      } else {
+        priceHtml = `<span class="fw-bold text-primary" style="font-size:1.4rem;">${p.price} ج.م</span>`;
+      }
+      // شارات الحالة جنب السعر (لا تخفي السعر)
+      let statusBadges = '';
+      if (isOwner) statusBadges += ' <span class="badge bg-info"><i class="fas fa-lightbulb me-1"></i>من إبداعاتك</span>';
+      if (hasPurchased && !isOwner) statusBadges += ' <span class="badge bg-success"><i class="fas fa-check me-1"></i>تم شراؤه</span>';
+      if (hasPending) statusBadges += ' <span class="badge bg-warning text-dark"><i class="fas fa-clock me-1"></i>قيد مراجعة الطلب</span>';
+      if (statusBadges) priceHtml = `<div class="d-flex flex-wrap align-items-center gap-2">${priceHtml}${statusBadges}</div>`;
+
+      if (p.isOfficial || p.sellerId === 'official') {
+        p.sellerName = 'محرك مصران';
+      }
+      const verified = (p.isOfficial || p.sellerId === 'official')
+        ? `<span class="badge-verified"><i class="fas fa-check-circle"></i> موثّق</span>`
+        : '';
+
+      let actionBtn = '';
+      if (canDownload) {
+        actionBtn = `<button class="btn btn-primary-custom text-white btn-lg" id="downloadFreeBtn"><i class="fas fa-download me-2"></i>تحميل المشروع</button>`;
+      } else if (hasPending) {
+        actionBtn = `<button class="btn btn-warning btn-lg" disabled><i class="fas fa-hourglass-half me-2"></i>يتم مراجعة الطلب</button>
+          <p class="text-muted small mt-2 mb-0">طلب الشراء قيد المراجعة من الإدارة. بعد القبول سيظهر زر التحميل.</p>`;
+      } else if (isFree) {
+        actionBtn = `<button class="btn btn-primary-custom text-white btn-lg" id="addToPurchasesBtn"><i class="fas fa-plus me-2"></i>أضف إلى مشترياتي</button>`;
+      } else {
+        actionBtn = `<button class="btn btn-success btn-lg" id="buyBtn"><i class="fas fa-shopping-cart me-2"></i>إنشاء طلب الشراء</button>`;
+      }
+
+      let thumbSrc = 'https://via.placeholder.com/500x300?text=No+Image';
+      if (p.thumbnailDirect) thumbSrc = p.thumbnailDirect;
+      else if (p.thumbnail) {
+        const m = p.thumbnail.match(/\/d\/([a-zA-Z0-9_-]+)/) || p.thumbnail.match(/id=([a-zA-Z0-9_-]+)/);
+        if (m) thumbSrc = `https://drive.google.com/thumbnail?id=${m[1]}&sz=w1000`;
+        else thumbSrc = p.thumbnail;
+      }
+
+      // زر تحميل واحد فقط في منطقة الإجراءات — بدون زر إضافي
+      const filesSection = '';
+
+      document.getElementById('productContent').innerHTML = `
+        <div class="row">
+          <div class="col-lg-5 mb-4">
+            <img src="${thumbSrc}" class="img-fluid rounded-4 shadow" alt="${p.title}" onerror="this.src='https://via.placeholder.com/500x300?text=Project'">
+          </div>
+          <div class="col-lg-7">
+            <h1 class="fw-bold mb-2">${p.title} ${verified}</h1>
+            <div class="mb-1 d-flex align-items-center gap-2">
+              <small class="text-muted">ID: ${projectId}</small>
+              <button type="button" class="btn btn-link btn-sm p-0 copy-prod-id" data-id="${projectId}" title="نسخ ID" style="font-size:0.8rem;"><i class="fas fa-copy"></i></button>
+            </div>
+            <div class="mb-3">${priceHtml}</div>
+            <p class="text-muted d-flex align-items-center gap-2 flex-wrap">بواسطة:
+              <a href="seller.html?id=${p.sellerId || ''}" class="fw-semibold text-decoration-none d-inline-flex align-items-center gap-2" style="color:#d4af37">
+                ${p.sellerPhoto ? `<img src="${p.sellerPhoto}" alt="" class="rounded-circle" style="width:28px;height:28px;object-fit:cover;border:2px solid #d4af37;">` : `<span class="d-inline-flex align-items-center justify-content-center rounded-circle" style="width:28px;height:28px;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;font-size:0.7rem;font-weight:700;">${(p.sellerName||'?').split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase()}</span>`}
+                ${p.sellerName || 'بائع'}${(p.isOfficial || p.sellerId === 'official') ? ' <span class="badge-verified" style="font-size:0.7rem;"><i class="fas fa-check-circle"></i></span>' : ''}
+              </a>
+            </p>
+            <hr>
+            <h5>الوصف</h5>
+            <p style="white-space:pre-wrap;">${(typeof linkifyText==='function'?linkifyText(p.description):p.description) || 'لا يوجد وصف'}</p>
+            <hr>
+            ${filesSection}
+            <div class="mt-3 mb-2">
+              <button type="button" class="btn btn-outline-primary w-100" id="openShareSheetBtn">
+                <i class="fas fa-share-alt me-2"></i>مشاركة
+              </button>
+            </div>
+            <div id="shareSheet" class="share-sheet d-none">
+              <div class="share-sheet-backdrop" id="shareSheetBackdrop"></div>
+              <div class="share-sheet-panel">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <h6 class="mb-0"><i class="fas fa-share-alt me-2"></i>مشاركة المنشور</h6>
+                  <button type="button" class="btn-close" id="closeShareSheetBtn" aria-label="إغلاق"></button>
+                </div>
+                <div class="small text-muted mb-2">الرابط المختصر</div>
+                <code id="productShareCode" class="d-block p-2 rounded bg-light border mb-3" style="direction:ltr;text-align:left;font-size:0.85rem;">Misran_store/${projectId}</code>
+                <div class="d-grid gap-2 mb-3">
+                  <button type="button" class="btn btn-primary" id="copyProductLinkBtn"><i class="fas fa-copy me-2"></i>نسخ الرابط</button>
+                </div>
+                <div class="small text-muted mb-2">مشاركة عبر التطبيقات</div>
+                <div class="share-apps-grid">
+                  <button type="button" class="share-app-btn" data-app="whatsapp" title="واتساب"><i class="fab fa-whatsapp" style="color:#25D366"></i><span>واتساب</span></button>
+                  <button type="button" class="share-app-btn" data-app="telegram" title="تلجرام"><i class="fab fa-telegram" style="color:#229ED9"></i><span>تلجرام</span></button>
+                  <button type="button" class="share-app-btn" data-app="facebook" title="فيسبوك"><i class="fab fa-facebook" style="color:#1877F2"></i><span>فيسبوك</span></button>
+                  <button type="button" class="share-app-btn" data-app="twitter" title="X"><i class="fab fa-twitter"></i><span>X</span></button>
+                  <button type="button" class="share-app-btn" data-app="messenger" title="ماسنجر"><i class="fab fa-facebook-messenger" style="color:#0084FF"></i><span>ماسنجر</span></button>
+                  <button type="button" class="share-app-btn" data-app="more" title="المزيد"><i class="fas fa-ellipsis-h"></i><span>أخرى</span></button>
+                </div>
+              </div>
+            </div>
+            <div id="actionArea" class="mt-3">${actionBtn}</div>
+            <p class="text-muted small mt-3 mb-0"><i class="far fa-calendar-alt me-1"></i>تاريخ النشر: ${(() => { try { const d = p.createdAt?.toDate?.() || (p.createdAt ? new Date(p.createdAt) : null); if (!d) return '-'; return d.getFullYear() + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + String(d.getDate()).padStart(2,'0'); } catch { return '-'; } })()}</p>
+          </div>
+        </div>
+        <hr class="my-4">
+        <div id="commentsSection">
+          <h4 class="mb-3"><i class="fas fa-comments me-2"></i>التعليقات والتقييمات</h4>
+          <div id="commentsList" class="mb-3" style="max-height:400px;overflow-y:auto;"></div>
+          <div id="commentFormArea" class="d-none">
+            <div class="card">
+              <div class="card-body">
+                <h6 id="commentFormTitle">أضف تقييمك وتعليقك (اختياري)</h6>
+                <div class="mb-2">
+                  <label class="form-label">عدد النجوم</label>
+                  <select class="form-select form-select-sm w-auto" id="commentStars">
+                    <option value="5">5 ⭐</option>
+                    <option value="4">4 ⭐</option>
+                    <option value="3">3 ⭐</option>
+                    <option value="2">2 ⭐</option>
+                    <option value="1">1 ⭐</option>
+                  </select>
+                </div>
+                <textarea class="form-control mb-2" id="commentText" rows="3" placeholder="اكتب تعليقك هنا (اختياري)..."></textarea>
+                <button class="btn btn-primary btn-sm" id="submitCommentBtn">إرسال</button>
+                <button class="btn btn-outline-secondary btn-sm d-none" id="updateCommentBtn">تحديث التعليق</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('downloadFreeBtn')?.addEventListener('click', handleFreeDownload);
+      document.getElementById('buyBtn')?.addEventListener('click', handleBuyClick);
+      document.getElementById('addToPurchasesBtn')?.addEventListener('click', handleAddToPurchases);
+      document.querySelector('.copy-prod-id')?.addEventListener('click', async (e) => {
+        e.preventDefault();
+        try {
+          await navigator.clipboard.writeText(e.currentTarget.dataset.id);
+          showToast('تم نسخ الـ ID');
+        } catch { showToast('تعذر النسخ', 'error'); }
+      });
+      loadComments();
+      setupCommentForm();
+      bindProductShareLink();
+    }
+
+    let myCommentId = null;
+
+    async function loadComments() {
+      const list = document.getElementById('commentsList');
+      if (!list) return;
+      try {
+        const snap = await getDocs(query(collection(db, 'comments'), where('projectId', '==', projectId)));
+        const comments = snap.docs
+          .sort((a,b) => (b.data().createdAt?.toMillis?.()||0) - (a.data().createdAt?.toMillis?.()||0));
+        if (comments.length === 0) {
+          list.innerHTML = '<div class="text-muted">لا توجد تعليقات بعد</div>';
+        } else {
+          list.innerHTML = comments.map(d => {
+            const c = d.data();
+            const stars = '★'.repeat(c.stars || 0) + '☆'.repeat(5 - (c.stars || 0));
+            const isMine = currentUser && c.userId === currentUser.uid;
+            if (isMine) myCommentId = d.id;
+            let cDate = '';
+            try {
+              const dd = c.createdAt?.toDate?.() || (c.createdAt ? new Date(c.createdAt) : null);
+              if (dd) cDate = dd.getFullYear() + '/' + String(dd.getMonth()+1).padStart(2,'0') + '/' + String(dd.getDate()).padStart(2,'0');
+            } catch {}
+            return `<div class="border-bottom py-2">
+              <div class="d-flex justify-content-between align-items-center flex-wrap gap-1">
+                <strong>${c.userName || 'مستخدم'}</strong>
+                <span class="text-warning">${stars}</span>
+              </div>
+              <p class="mb-1 small">${c.text || ''}</p>
+              <div class="d-flex justify-content-between align-items-center">
+                <small class="text-muted">${cDate ? '<i class="far fa-calendar-alt me-1"></i>' + cDate : ''}</small>
+                ${isMine ? `<button class="btn btn-link btn-sm p-0 edit-my-comment" data-id="${d.id}" data-stars="${c.stars||5}" data-text="${(c.text||'').replace(/"/g,'&quot;')}">تعديل التعليق</button>` : ''}
+              </div>
+            </div>`;
+          }).join('');
+          list.querySelectorAll('.edit-my-comment').forEach(btn => {
+            btn.addEventListener('click', () => {
+              document.getElementById('commentStars').value = btn.dataset.stars;
+              document.getElementById('commentText').value = btn.dataset.text;
+              document.getElementById('submitCommentBtn').classList.add('d-none');
+              document.getElementById('updateCommentBtn').classList.remove('d-none');
+              document.getElementById('commentFormTitle').textContent = 'تعديل تعليقك';
+              myCommentId = btn.dataset.id;
+            });
+          });
+        }
+      } catch(e) { list.innerHTML = ''; }
+    }
+
+    function setupCommentForm() {
+      const area = document.getElementById('commentFormArea');
+      if (!area) return;
+      if (hasPurchased || (projectData && projectData.isFree === false && hasPurchased) || hasPurchased) {
+        area.classList.remove('d-none');
+      }
+      // show form if purchased (free or paid approved)
+      if (hasPurchased) area.classList.remove('d-none');
+      else area.classList.add('d-none');
+
+      // بعد ما loadComments يشتغل هيتظبط الزرار
+      setTimeout(() => {
+        if (myCommentId) {
+          document.getElementById('submitCommentBtn')?.classList.add('d-none');
+          document.getElementById('updateCommentBtn')?.classList.remove('d-none');
+          document.getElementById('commentFormTitle').textContent = 'تحديث تعليقك وتقييمك';
+        } else {
+          document.getElementById('submitCommentBtn')?.classList.remove('d-none');
+          document.getElementById('updateCommentBtn')?.classList.add('d-none');
+        }
+      }, 500);
+
+      document.getElementById('submitCommentBtn')?.addEventListener('click', async () => {
+        if (!currentUser || myCommentId) return;
+        const stars = parseInt(document.getElementById('commentStars').value) || 5;
+        const text = document.getElementById('commentText').value.trim();
+        if (text && typeof moderateText === 'function' && !moderateText(text, 'التعليق')) return;
+        showLoading(true);
+        try {
+          await addDoc(collection(db, 'comments'), {
+            projectId,
+            userId: currentUser.uid,
+            userName: currentUser.displayName || currentUser.email?.split('@')[0] || 'مستخدم',
+            stars,
+            text,
+            createdAt: serverTimestamp()
+          });
+          showToast('تم إضافة التعليق');
+          document.getElementById('commentText').value = '';
+          loadComments();
+          document.getElementById('submitCommentBtn').classList.add('d-none');
+          document.getElementById('updateCommentBtn').classList.remove('d-none');
+        } catch(e) { showToast('خطأ: ' + e.message, 'error'); }
+        finally { showLoading(false); }
+      });
+
+      document.getElementById('updateCommentBtn')?.addEventListener('click', async () => {
+        if (!myCommentId) return;
+        const stars = parseInt(document.getElementById('commentStars').value) || 5;
+        const text = document.getElementById('commentText').value.trim();
+        showLoading(true);
+        try {
+          await updateDoc(doc(db, 'comments', myCommentId), { stars, text, updatedAt: serverTimestamp() });
+          showToast('تم تحديث التعليق');
+          loadComments();
+        } catch(e) { showToast('خطأ: ' + e.message, 'error'); }
+        finally { showLoading(false); }
+      });
+    }
+
+    async function handleAddToPurchases() {
+      if (!currentUser) {
+        showToast('يجب تسجيل الدخول أولاً', 'error');
+        return;
+      }
+      showLoading(true);
+      try {
+        const p = projectData;
+        const freePayload = {
+          projectId,
+          projectTitle: p.title,
+          buyerId: currentUser.uid,
+          buyerEmail: currentUser.email,
+          sellerId: p.sellerId,
+          amount: 0,
+          status: 'owned_free',
+          // لقطة كاملة — تبقى شبكياً ومحلياً حتى لو حُذف المنتج
+          snapshot: {
+            title: p.title,
+            description: p.description,
+            thumbnail: p.thumbnail,
+            thumbnailDirect: p.thumbnailDirect,
+            filesLink: p.filesLink,
+            files: p.files || [],
+            sellerName: p.sellerName,
+            price: p.price,
+            isFree: true
+          },
+          createdAt: serverTimestamp()
+        };
+        const freeRef = await addDoc(collection(db, 'purchases'), freePayload);
+        appendPurchaseToLocalCache(freeRef.id, freePayload);
+        showToast('تمت الإضافة إلى مشترياتك');
+        hasPurchased = true;
+        renderProduct();
+      } catch (err) {
+        showToast('خطأ: ' + err.message, 'error');
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    function triggerDirectDownload(url, filename) {
+      // محاولة تنزيل مباشر بدون فتح صفحة درايف
+      const a = document.createElement('a');
+      a.href = url;
+      a.setAttribute('download', filename || 'project-file');
+      a.target = '_blank';
+      a.rel = 'noopener';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
+
+    async function handleFreeDownload() {
+      if (!currentUser) {
+        showToast('يجب تسجيل الدخول أولاً لتحميل المشروع', 'error');
+        return;
+      }
+      const link = projectData.filesLink || (projectData.files && projectData.files[0] && projectData.files[0].url) || '';
+      if (!link) {
+        showToast('لا يوجد ملف للتحميل', 'error');
+        return;
+      }
+      let dl = link;
+      if (typeof window.getDriveDownloadUrl === 'function') {
+        dl = window.getDriveDownloadUrl(link) || link;
+      } else {
+        const m = String(link).match(/\/d\/([a-zA-Z0-9_-]+)/) || String(link).match(/[?&]id=([a-zA-Z0-9_-]+)/);
+        if (m) dl = `https://drive.google.com/uc?export=download&id=${m[1]}`;
+      }
+      triggerDirectDownload(dl, (projectData.title || 'project') + '.zip');
+      showToast('جاري بدء التحميل...');
+      try {
+        await updateDoc(doc(db, 'projects', projectId), { downloads: increment(1) });
+      } catch(e){}
+    }
+
+    async function handleBuyClick() {
+      if (!currentUser) {
+        showToast('يجب تسجيل الدخول أولاً لشراء المنتج', 'error');
+        return;
+      }
+      const price = (window.getEffectivePrice ? window.getEffectivePrice(projectData) : parseFloat(projectData.price)) || 0;
+      if (!(await siteConfirm(`تأكيد شراء "${projectData.title}" مقابل ${price} ج.م من رصيدك؟`, 'تأكيد الشراء'))) return;
+      showLoading(true);
+      try {
+        const uRef = doc(db, 'users', currentUser.uid);
+        const uSnap = await getDoc(uRef);
+        const bal = uSnap.exists() ? (parseFloat(uSnap.data().balance) || 0) : 0;
+        if (bal < price) {
+          showToast('رصيدك غير كافٍ. سيتم تحويلك لصفحة شحن الرصيد', 'error');
+          showLoading(false);
+          setTimeout(() => location.href = 'balance.html', 1200);
+          return;
+        }
+        const p = projectData;
+        // عمولة البائع وقت الشراء فقط (لا تُعاد لاحقاً)
+        let commissionPercent = 5;
+        if (p.sellerId && p.sellerId !== 'official' && !p.isOfficial) {
+          try {
+            let sellerData = window.localCache?.get('user:' + p.sellerId);
+            if (!sellerData) {
+              const sSnap = await getDoc(doc(db, 'users', p.sellerId));
+              if (sSnap.exists()) {
+                sellerData = sSnap.data();
+                try { window.localCache?.set('user:' + p.sellerId, sellerData); } catch(_){}
+              }
+            }
+            const r = parseFloat(sellerData?.commissionPercent);
+            if (isFinite(r) && r >= 0 && r <= 100) commissionPercent = r;
+          } catch(_){}
+        } else {
+          commissionPercent = 0; // منتجات المحرك الرسمية بدون عمولة من بائع
+        }
+        const commissionAmount = price * (commissionPercent / 100);
+        const sellerNet = price - commissionAmount;
+        await updateDoc(uRef, { balance: bal - price });
+        try { window.localCache?.set('user:' + currentUser.uid, { ...(window.localCache?.get('user:'+currentUser.uid)||{}), balance: bal - price }); } catch(_){}
+        const buyPayload = {
+          projectId,
+          projectTitle: p.title,
+          buyerId: currentUser.uid,
+          buyerEmail: currentUser.email,
+          buyerName: currentUser.displayName || '',
+          sellerId: p.sellerId,
+          sellerName: p.sellerName || '',
+          sellerPayMethod: p.paymentMethod || '',
+          sellerPayNumber: p.paymentNumber || '',
+          sellerPayName: p.paymentName || '',
+          paymentMethod: p.paymentMethod || '',
+          paymentNumber: p.paymentNumber || '',
+          paymentName: p.paymentName || '',
+          amount: price,
+          price: price,
+          commissionPercent,
+          commissionAmount,
+          sellerNet,
+          status: 'approved',
+          payoutSent: false,
+          paidFromBalance: true,
+          snapshot: {
+            title: p.title,
+            description: p.description,
+            thumbnail: p.thumbnail,
+            thumbnailDirect: p.thumbnailDirect,
+            filesLink: p.filesLink,
+            files: p.files || [],
+            sellerName: p.sellerName,
+            price: p.price,
+            isFree: false
+          },
+          createdAt: serverTimestamp(),
+          approvedAt: serverTimestamp()
+        };
+        const buyRef = await addDoc(collection(db, 'purchases'), buyPayload);
+        appendPurchaseToLocalCache(buyRef.id, buyPayload);
+        try { await updateDoc(doc(db, 'projects', projectId), { sales: increment(1) }); } catch(e){}
+        showToast('تم الشراء بنجاح من رصيدك');
+        hasPurchased = true;
+        hasPending = false;
+        renderProduct();
+      } catch (err) {
+        showToast('حدث خطأ: ' + err.message, 'error');
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    loadProduct();
+  </script>
+</body>
+</html>

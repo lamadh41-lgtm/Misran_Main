@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>رصيدي | محرك مصران</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="styles.css" rel="stylesheet">
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
+    <div class="container">
+      <a class="navbar-brand js-site-brand" href="index.html"><i class="fas fa-ankh me-2"></i>محرك مصران</a>
+      <div class="d-flex gap-2" id="authArea"></div>
+    </div>
+  </nav>
+  <div class="container py-5">
+    <h2 class="mb-3"><i class="fas fa-wallet me-2"></i>رصيدي</h2>
+    <div class="stat-card text-center mb-4">
+      <div class="stat-number text-success" id="balValue">0</div>
+      <div>الرصيد الحالي (ج.م)</div>
+    </div>
+    <div class="card mb-4">
+      <div class="card-body">
+        <h5>شحن رصيد</h5>
+        <div class="row g-2 align-items-end">
+          <div class="col-md-4">
+            <label class="form-label">المبلغ</label>
+            <input type="number" class="form-control" id="topupAmount" min="1" step="any" placeholder="مثال: 2000">
+          </div>
+          <div class="col-md-4">
+            <button class="btn btn-primary" id="startTopupBtn">شحن رصيد</button>
+          </div>
+        </div>
+        <div id="topupSteps" class="mt-3 d-none">
+          <div class="alert alert-warning">
+            <strong>تحذير:</strong> لا يمكن الرجوع عن الطلب ولا يمكن استرجاع المال بعد الإرسال.
+          </div>
+          <div id="topupMessageBox" class="mb-2">حوّل المبلغ <strong id="topupAmountLabel"></strong> ج.م ثم ارفع صورة التحويل.</div>
+          <input type="file" class="form-control mb-2" id="topupTransferFile" accept="image/*">
+          <input type="hidden" id="topupTransferLink" value="">
+          <button class="btn btn-success" id="confirmTopupBtn">تأكيد إرسال الطلب للمراجعة</button>
+        </div>
+      </div>
+    </div>
+    <h5>سجل الشحنات</h5>
+    <div id="topupHistory"></div>
+  </div>
+  <div class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module">
+    import { auth, db, onAuthStateChanged, doc, getDoc, collection, addDoc, getDocs, query, where, limit, serverTimestamp } from './firebase.js';
+    import { showToast, showLoading } from './app.js';
+    async function loadTopupMessage() {
+      try {
+        let m = window.localCache?.get('settings:siteMessages');
+        if (!m) {
+          const snap = await getDoc(doc(db, 'settings', 'siteMessages'));
+          m = snap.exists() ? snap.data() : {};
+          try { window.localCache?.set('settings:siteMessages', m); } catch(_){}
+        }
+        const box = document.getElementById('topupMessageBox');
+        if (!box) return;
+        const amt = document.getElementById('topupAmount')?.value || document.getElementById('topupAmountLabel')?.textContent || '';
+        if (m.topupMessage) {
+          let html = String(m.topupMessage)
+            .replace(/\{\{amount\}\}/g, '<strong id="topupAmountLabel">' + amt + '</strong>')
+            .replace(/\n/g, '<br>');
+          if (!html.includes('topupAmountLabel')) {
+            html += ' <span class="d-none"><strong id="topupAmountLabel">' + amt + '</strong></span>';
+          }
+          box.innerHTML = html;
+        } else {
+          box.innerHTML = 'حوّل المبلغ <strong id="topupAmountLabel">' + amt + '</strong> ج.م ثم ارفع صورة التحويل.';
+        }
+      } catch (e) { console.warn(e); }
+    }
+    // uploadToDriveScript on window from app.js
+
+    let currentUser = null;
+    let pendingAmount = 0;
+
+    async function refresh() {
+      let uData = window.localCache?.get('user:' + currentUser.uid);
+      let u;
+      if (uData) { u = { exists: () => true, data: () => uData }; }
+      else {
+        u = await getDoc(doc(db, 'users', currentUser.uid));
+        if (u.exists()) try { window.localCache?.set('user:' + currentUser.uid, u.data()); } catch(_){}
+      }
+      const bal = u.exists() ? (parseFloat(u.data().balance) || 0) : 0;
+      document.getElementById('balValue').textContent = bal.toFixed(2);
+
+      const snap = await getDocs(query(collection(db, 'topups'), where('userId', '==', currentUser.uid), limit(40)));
+      const rows = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+        .sort((a,b) => (b.createdAt?.toMillis?.()||0) - (a.createdAt?.toMillis?.()||0));
+      const hist = document.getElementById('topupHistory');
+      if (!rows.length) hist.innerHTML = '<div class="text-muted">لا توجد عمليات شحن بعد</div>';
+      else hist.innerHTML = rows.map(r => {
+        const st = r.status === 'approved' ? 'نجاح' : r.status === 'rejected' ? 'مرفوض' : 'قيد المراجعة';
+        const cls = r.status === 'approved' ? 'success' : r.status === 'rejected' ? 'danger' : 'warning';
+        const dt = r.createdAt?.toDate?.().toLocaleString('ar-EG') || '';
+        return `<div class="balance-hist-item d-flex justify-content-between align-items-center"><span>${r.amount} ج.م — ${dt}</span><span class="badge bg-${cls}">${st}</span></div>`;
+      }).join('');
+    }
+
+    document.getElementById('startTopupBtn').onclick = () => {
+      const amount = parseFloat(document.getElementById('topupAmount').value);
+      if (!amount || amount <= 0) { showToast('أدخل مبلغ صحيح', 'error'); return; }
+      pendingAmount = amount;
+      document.getElementById('topupAmountLabel').textContent = amount;
+      document.getElementById('topupSteps').classList.remove('d-none');
+      loadTopupMessage();
+    };
+
+    document.getElementById('confirmTopupBtn').onclick = async () => {
+      const file = document.getElementById('topupTransferFile')?.files?.[0];
+      if (!file) { showToast('ارفع صورة التحويل من جهازك', 'error'); return; }
+      if (!(await siteConfirm('تأكيد إرسال الطلب؟ لن يمكن الرجوع أو استرجاع المبلغ.', 'شحن الرصيد'))) return;
+      showLoading(true);
+      try {
+        const u = await getDoc(doc(db, 'users', currentUser.uid));
+        const data = u.exists() ? u.data() : {};
+        const userName = data.name || currentUser.displayName || currentUser.email || 'user';
+        // رفع صورة التحويل على درايف: المستخدم/التحويلات
+        if (typeof window.uploadToDriveScript !== 'function') {
+          throw new Error('وظيفة الرفع غير جاهزة — تأكد من تحميل app.js');
+        }
+        showToast('جاري ضغط ورفع صورة التحويل...');
+        let fileToSend = file;
+        if (window.compressImageFile) {
+          fileToSend = await window.compressImageFile(file, 1000, 0.65);
+        } else if (typeof compressImageFile === 'function') {
+          fileToSend = await compressImageFile(file, 1000, 0.65);
+        }
+        const up = await window.uploadToDriveScript(fileToSend, null, {
+          folderKind: 'transfers',
+          userName,
+          userId: currentUser.uid,
+          projectName: 'transfers'
+        });
+        await addDoc(collection(db, 'topups'), {
+          userId: currentUser.uid,
+          userEmail: currentUser.email,
+          userName,
+          amount: pendingAmount,
+          transferImage: up.url,
+          transferThumb: up.thumbUrl || '',
+          status: 'pending',
+          createdAt: serverTimestamp()
+        });
+        showToast('تم إرسال طلب الشحن للمراجعة');
+        document.getElementById('topupSteps').classList.add('d-none');
+        document.getElementById('topupAmount').value = '';
+        document.getElementById('topupTransferFile').value = '';
+        refresh();
+      } catch (e) { showToast('فشل: ' + (e.message || e), 'error'); }
+      finally { showLoading(false); }
+    };
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { location.href = 'index.html'; return; }
+      currentUser = user;
+      refresh();
+    });
+  </script>
+</body>
+</html>
