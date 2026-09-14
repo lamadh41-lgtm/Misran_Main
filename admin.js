@@ -391,7 +391,7 @@ async function loadStats() {
     showToast('خطأ في تحميل الإحصائيات: ' + err.message, 'error');
   }
 }
-loadStats();
+// loadStats() — فقط عند فتح قسم لوحة التحكم (لا عند تحميل الصفحة)
 
 // ===== Orders (Pending Purchases) =====
 async function loadOrders() {
@@ -563,6 +563,7 @@ async function loadUsers(search = '', direction = 'first') {
         <table class="table table-hover bg-white rounded shadow-sm">
           <thead class="table-light">
             <tr>
+              <th style="width:56px"></th>
               <th>الاسم</th>
               <th>الإيميل</th>
               <th>تاريخ التسجيل</th>
@@ -572,9 +573,14 @@ async function loadUsers(search = '', direction = 'first') {
           <tbody>
             ${docs.map(d => {
               const u = d.data();
+              const photo = u.photoURL || u.avatarUrl || '';
+              const av = photo
+                ? `<img src="${photo}" alt="" style="width:40px;height:40px;border-radius:50%;object-fit:cover;">`
+                : `<div class="bg-secondary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width:40px;height:40px;font-size:0.9rem;">${((u.name||'?')[0]||'?')}</div>`;
               return `<tr class="user-row" data-id="${d.id}" data-name="${(u.name||'').replace(/"/g,'&quot;')}" style="cursor:pointer;">
-                <td><span class="text-primary fw-semibold">${u.name || '-'}</span></td>
-                <td>${u.email || '-'}</td>
+                <td class="align-middle">${av}</td>
+                <td class="align-middle"><span class="text-primary fw-semibold">${u.name || '-'}</span></td>
+                <td class="align-middle">${u.email || '-'}</td>
                 <td>${(() => { try { const d = u.createdAt?.toDate?.(); if (!d) return '-'; return d.getFullYear() + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + String(d.getDate()).padStart(2,'0'); } catch { return '-'; } })()}</td>
                 <td>
                   <button class="btn btn-sm btn-outline-primary view-user-prods" data-id="${d.id}" data-name="${(u.name||'').replace(/"/g,'&quot;')}">إبداعاته</button>
@@ -1076,9 +1082,7 @@ async function viewAdminProduct(prodId) {
           ${p.driveFolderUrl ? `<p class="mb-1"><a href="${p.driveFolderUrl}" target="_blank" class="btn btn-sm btn-outline-secondary">مجلد المشروع على درايف</a></p>` : ''}
           <p class="small text-muted">ID: ${prodId}</p>
           <div class="mt-2 d-flex flex-wrap gap-2 align-items-center">
-            <label class="small mb-0">رابط المشاركة:</label>
-            <input type="text" class="form-control form-control-sm" style="max-width:280px;" id="adminShareLink" readonly value="${getStoreProductUrl(prodId)}">
-            <button type="button" class="btn btn-sm btn-outline-primary" id="adminCopyShareBtn"><i class="fas fa-copy me-1"></i>نسخ</button>
+            <button type="button" class="btn btn-sm btn-outline-primary" id="adminCopyShareBtn"><i class="fas fa-copy me-1"></i>نسخ رابط المشاركة</button>
           </div>
         </div>
         <div class="col-12">
@@ -1094,9 +1098,6 @@ async function viewAdminProduct(prodId) {
         </div>
       </div>`;
 
-    // نسخ رابط المشاركة — دائماً من getStoreProductUrl (مش من قيمة قديمة غلط)
-    const shareInp = document.getElementById('adminShareLink');
-    if (shareInp) shareInp.value = getStoreProductUrl(prodId);
     document.getElementById('adminCopyShareBtn')?.addEventListener('click', () => {
       copyStoreProductLink(prodId);
     });
@@ -2813,7 +2814,14 @@ async function loadOfficialProfile() {
     const ta = document.getElementById('topupMessageInput');
     if (ta) ta.value = siteMsg.topupMessage || 'حوّل المبلغ على الرقم المحدد ثم ارفع صورة التحويل من جهازك.';
 
+    // رقم الدعم / الاتصال
+    const phoneInp = document.getElementById('supportPhoneInput');
+    const hintInp = document.getElementById('supportPhoneHintInput');
+    if (phoneInp) phoneInp.value = siteMsg.supportPhone || siteMsg.devPhone || '';
+    if (hintInp) hintInp.value = siteMsg.supportPhoneHint || 'لو مستعجل وعايز تواصل أسرع اتصل على هذا الرقم';
+
     await loadEnginePackageSettings();
+    initRootSettingsTabs();
     // تحميل قائمة مستخدمين لتعديل العمولة (كاش)
     await loadCommUserSelect();
   } catch (e) {
@@ -3274,6 +3282,7 @@ async function renderPlaylistItems() {
           const itemIds = (pl.data().itemIds || []).filter(x => x !== btn.dataset.id);
           await updateDoc(doc(db, 'promoPlaylists', sel.value), { itemIds, updatedAt: serverTimestamp() });
           try { networkInvalidate('promo:'); } catch (_) {}
+          showToast('تمت الإزالة من القائمة فقط — الفيديو ما زال في المحتوى');
           loadPlaylistsAdmin();
         } catch (e) { showToast(e.message, 'error'); }
       };
@@ -3562,16 +3571,47 @@ async function loadPromoAdmin(page) {
             <p class="small text-muted mb-2" style="max-height:3em;overflow:hidden;">${(p.description || '').slice(0, 120)}</p>
             <div class="d-flex gap-1 flex-wrap">
               <a href="${p.videoUrl || '#'}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary">فتح الرابط</a>
+              <button type="button" class="btn btn-sm btn-outline-secondary promo-edit"
+                data-id="${d.id}"
+                data-type="${p.type || 'youtube'}"
+                data-title="${(p.title||'').replace(/"/g,'&quot;')}"
+                data-desc="${(p.description||'').replace(/"/g,'&quot;')}"
+                data-url="${(p.videoUrl||'').replace(/"/g,'&quot;')}"
+                data-thumb="${(p.thumbnail||'').replace(/"/g,'&quot;')}"
+                data-file="${p.thumbnailFileId || ''}">تعديل</button>
               <button type="button" class="btn btn-sm btn-outline-danger promo-del" data-id="${d.id}" data-file="${p.thumbnailFileId || ''}">حذف</button>
             </div>
+            <div class="small text-muted mt-1">ID: ${d.id}</div>
           </div>
         </div>
       </div>`;
     }).join('');
 
+    list.querySelectorAll('.promo-edit').forEach(btn => {
+      btn.onclick = () => {
+        document.getElementById('promoEditId').value = btn.dataset.id;
+        document.getElementById('promoType').value = btn.dataset.type || 'youtube';
+        document.getElementById('promoTitle').value = btn.dataset.title || '';
+        document.getElementById('promoDesc').value = btn.dataset.desc || '';
+        document.getElementById('promoVideoUrl').value = btn.dataset.url || '';
+        window._promoEditOldFileId = btn.dataset.file || '';
+        const prev = document.getElementById('promoThumbCropPreview');
+        if (prev) {
+          prev.innerHTML = btn.dataset.thumb
+            ? `<img src="${btn.dataset.thumb}" alt="" style="max-height:80px;border-radius:8px;">`
+            : '';
+        }
+        document.getElementById('promoFormTitle').textContent = 'تعديل محتوى';
+        document.getElementById('promoAddBtn')?.classList.add('d-none');
+        document.getElementById('promoUpdateBtn')?.classList.remove('d-none');
+        document.getElementById('promoCancelEditBtn')?.classList.remove('d-none');
+        document.getElementById('section-promoContent')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      };
+    });
+
     list.querySelectorAll('.promo-del').forEach(btn => {
       btn.onclick = async () => {
-        if (!(await siteConfirm('حذف هذا المحتوى؟', 'حذف'))) return;
+        if (!(await siteConfirm('حذف هذا المحتوى نهائياً من قسم المحتوى؟', 'حذف محتوى'))) return;
         try {
           showLoading(true);
           const fid = btn.dataset.file;
@@ -4652,4 +4692,136 @@ document.getElementById('confirmSendBalanceBtn')?.addEventListener('click', asyn
   } finally {
     btn.disabled = false;
   }
+});
+
+
+// إيقاف شات الأدمن عند إخفاء التبويب
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden && adminChatUnsub) {
+    try { adminChatUnsub(); } catch(_){}
+    adminChatUnsub = null;
+  }
+});
+window.addEventListener('pagehide', () => {
+  if (adminChatUnsub) { try { adminChatUnsub(); } catch(_){} adminChatUnsub = null; }
+});
+
+// ===== تبويبات الجذر الأساسي =====
+function initRootSettingsTabs() {
+  const tabs = document.querySelectorAll('#rootSettingsTabs [data-root-tab]');
+  if (!tabs.length) return;
+  tabs.forEach(btn => {
+    if (btn._rootBound) return;
+    btn._rootBound = true;
+    btn.addEventListener('click', () => {
+      tabs.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('.root-tab-pane').forEach(p => p.classList.add('d-none'));
+      const pane = document.getElementById('root-tab-' + btn.dataset.rootTab);
+      if (pane) pane.classList.remove('d-none');
+    });
+  });
+}
+
+document.getElementById('saveSupportPhoneBtn')?.addEventListener('click', async () => {
+  const phone = (document.getElementById('supportPhoneInput')?.value || '').trim();
+  const hint = (document.getElementById('supportPhoneHintInput')?.value || '').trim() || 'لو مستعجل وعايز تواصل أسرع اتصل على هذا الرقم';
+  const msg = document.getElementById('supportPhoneSaveMsg');
+  if (!phone) { showToast('أدخل رقم التليفون', 'error'); return; }
+  try {
+    await setDoc(doc(db, 'settings', 'siteMessages'), {
+      supportPhone: phone,
+      devPhone: phone,
+      supportPhoneHint: hint,
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+    try {
+      networkInvalidate('settings:siteMessages');
+      const prev = cacheGet('settings:siteMessages') || {};
+      cacheSet('settings:siteMessages', { ...prev, supportPhone: phone, devPhone: phone, supportPhoneHint: hint });
+    } catch (_) {}
+    if (msg) msg.innerHTML = '<span class="text-success">تم حفظ رقم الاتصال</span>';
+    showToast('تم حفظ رقم الدعم');
+  } catch (e) {
+    if (msg) msg.textContent = e.message || String(e);
+    showToast(e.message || String(e), 'error');
+  }
+});
+
+
+function resetPromoForm() {
+  document.getElementById('promoEditId').value = '';
+  document.getElementById('promoTitle').value = '';
+  document.getElementById('promoDesc').value = '';
+  document.getElementById('promoVideoUrl').value = '';
+  document.getElementById('promoThumb').value = '';
+  window._promoThumbCropped = null;
+  window._promoEditOldFileId = '';
+  const ptp = document.getElementById('promoThumbCropPreview'); if (ptp) ptp.innerHTML = '';
+  document.getElementById('promoFormTitle').textContent = 'إضافة محتوى';
+  document.getElementById('promoAddBtn')?.classList.remove('d-none');
+  document.getElementById('promoUpdateBtn')?.classList.add('d-none');
+  document.getElementById('promoCancelEditBtn')?.classList.add('d-none');
+  const msg = document.getElementById('promoAddMsg'); if (msg) msg.textContent = '';
+}
+
+document.getElementById('promoCancelEditBtn')?.addEventListener('click', () => resetPromoForm());
+
+document.getElementById('promoUpdateBtn')?.addEventListener('click', async () => {
+  const id = document.getElementById('promoEditId')?.value;
+  if (!id) return;
+  const type = document.getElementById('promoType')?.value || 'youtube';
+  const title = (document.getElementById('promoTitle')?.value || '').trim();
+  const description = (document.getElementById('promoDesc')?.value || '').trim();
+  const videoUrl = (document.getElementById('promoVideoUrl')?.value || '').trim();
+  const thumbFile = window._promoThumbCropped || document.getElementById('promoThumb')?.files?.[0];
+  if (!title || !videoUrl) {
+    showToast('الاسم والرابط مطلوبان', 'error');
+    return;
+  }
+  const msg = document.getElementById('promoAddMsg');
+  try {
+    showLoading(true, 'جاري حفظ التعديل...');
+    const payload = {
+      type,
+      title,
+      description,
+      videoUrl,
+      updatedAt: serverTimestamp()
+    };
+    if (thumbFile) {
+      const oldId = window._promoEditOldFileId || '';
+      if (oldId && typeof adminDeleteDriveFile === 'function') {
+        try { await adminDeleteDriveFile(oldId); } catch (_) {}
+      }
+      const up = await adminUploadToDrive(thumbFile, {
+        projectName: 'PromoContentThumbs',
+        folderKind: 'images',
+        deleteOldInFolder: false
+      });
+      payload.thumbnail = up.thumbUrl || up.url || '';
+      payload.thumbnailFileId = up.fileId || null;
+    }
+    await updateDoc(doc(db, 'promoContent', id), payload);
+    try { networkInvalidate('promo:'); } catch (_) {}
+    if (msg) msg.innerHTML = '<span class="text-success">تم حفظ التعديل</span>';
+    showToast('تم تحديث المحتوى');
+    resetPromoForm();
+    loadPromoAdmin(promoAdminPage || 1);
+    loadPlaylistsAdmin();
+  } catch (e) {
+    if (msg) msg.textContent = e.message || String(e);
+    showToast(e.message || String(e), 'error');
+  } finally {
+    showLoading(false);
+  }
+});
+
+// بحث محلي في قائمة المحتوى
+document.getElementById('promoSearch')?.addEventListener('input', () => {
+  const q = (document.getElementById('promoSearch')?.value || '').trim().toLowerCase();
+  document.querySelectorAll('#promoAdminList [data-promo-id]').forEach(el => {
+    const hay = (el.dataset.promoSearch || '').toLowerCase();
+    el.style.display = (!q || hay.includes(q)) ? '' : 'none';
+  });
 });

@@ -38,9 +38,9 @@
       <div class="col-lg-4 mb-4">
         <div class="account-card text-center">
           <i class="fas fa-phone-alt fa-3x text-primary mb-3"></i>
-          <h4>رقم المطور</h4>
+          <h4>الاتصال</h4>
           <p class="fs-4 fw-bold" id="devPhone">سيتم إضافته لاحقاً</p>
-          <p class="text-muted small">للتواصل المباشر في الحالات العاجلة</p>
+          <p class="text-muted small">لو مستعجل وعايز تواصل أسرع اتصل على هذا الرقم</p>
         </div>
       </div>
       <div class="col-lg-8">
@@ -63,6 +63,23 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script type="module">
     import { auth, db, onAuthStateChanged, collection, addDoc, query, where, limit, onSnapshot, serverTimestamp } from './firebase.js';
+    import { doc, getDoc } from './firebase.js';
+
+    async function loadSupportPhoneDisplay() {
+      const el = document.getElementById('devPhone');
+      if (!el) return;
+      try {
+        const snap = await getDoc(doc(db, 'settings', 'siteMessages'));
+        const d = snap.exists() ? snap.data() : {};
+        const phone = d.supportPhone || d.devPhone || '';
+        el.textContent = phone || 'سيتم إضافته لاحقاً';
+        if (phone) {
+          el.innerHTML = `<a href="tel:${phone.replace(/\s/g,'')}" class="text-decoration-none">${phone}</a>`;
+        }
+      } catch (_) {}
+    }
+    loadSupportPhoneDisplay();
+
 
     function showToast(msg, type='success') {
       let container = document.querySelector('.toast-container');
@@ -78,20 +95,22 @@
       try { new bootstrap.Toast(document.getElementById(id)).show(); } catch(e){}
     }
 
-    onAuthStateChanged(auth, (user) => {
-      if (!user) return;
-      document.getElementById('chatInputArea').style.display = 'flex';
+    let pageChatUnsub = null;
+    function stopPageChat() {
+      if (pageChatUnsub) { try { pageChatUnsub(); } catch(_){} pageChatUnsub = null; }
+    }
+    function startPageChat(user) {
+      stopPageChat();
       const chatBox = document.getElementById('chatBox');
+      if (!chatBox || !user) return;
       chatBox.innerHTML = '<div class="text-center text-muted">جاري تحميل المحادثة...</div>';
-
-      // الصفحة دي مخصصة للدردشة — onSnapshot هنا مقصود، مع limit
-      const q = query(collection(db, 'supportChats'), where('userId', '==', user.uid), limit(80));
-      onSnapshot(q, (snap) => {
+      const q = query(collection(db, 'supportChats'), where('userId', '==', user.uid), limit(50));
+      pageChatUnsub = onSnapshot(q, (snap) => {
+        if (document.hidden) return; // التبويب مخفي — لا ترسم ولا تستهلك واجهة
         if (snap.empty) {
           chatBox.innerHTML = '<div class="text-center text-muted py-3">ابدأ المحادثة بإرسال رسالة</div>';
           return;
         }
-        // ترتيب يدوي
         const docs = snap.docs.slice().sort((a, b) => {
           const t1 = a.data().createdAt?.toMillis?.() || 0;
           const t2 = b.data().createdAt?.toMillis?.() || 0;
@@ -109,6 +128,14 @@
         }).join('');
         chatBox.scrollTop = chatBox.scrollHeight;
       });
+    }
+
+    let _supportPageUser = null;
+    onAuthStateChanged(auth, (user) => {
+      _supportPageUser = user;
+      if (!user) { stopPageChat(); return; }
+      document.getElementById('chatInputArea').style.display = 'flex';
+      startPageChat(user);
 
       document.getElementById('sendChatBtn').onclick = async () => {
         const input = document.getElementById('chatInput');
@@ -125,6 +152,13 @@
         input.value = '';
       };
     });
+
+    // مغادرة الصفحة أو إخفاء التبويب = إيقاف المستمع فوراً
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) stopPageChat();
+      else if (_supportPageUser) startPageChat(_supportPageUser);
+    });
+    window.addEventListener('pagehide', stopPageChat);
   </script>
 </body>
 </html>

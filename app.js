@@ -1199,6 +1199,7 @@ let supportUnsub = null;
 
 function initSupportWidget(user) {
   stopSupportListener();
+  stopSupportBadgeWatcher();
   supportOpen = false;
 
   // إزالة أي واجهة دعم قديمة كبيرة
@@ -1229,10 +1230,28 @@ function initSupportWidget(user) {
             <button class="btn btn-sm btn-primary" id="supportSendBtn"><i class="fas fa-paper-plane"></i></button>
           </div>
         </div>
-        <button type="button" id="supportToggleBtn" class="support-fab-circle" title="الدعم">
-          <i class="fas fa-headset"></i>
-          <span id="supportBadge" class="support-badge-dot d-none"></span>
-        </button>
+        <div id="supportCallPanel" class="support-panel support-call-panel">
+          <div class="support-panel-header">
+            <span><i class="fas fa-phone-alt me-1"></i> الاتصال</span>
+            <button type="button" id="supportCallCloseBtn" class="btn btn-sm btn-light py-0 px-2" aria-label="إغلاق">&times;</button>
+          </div>
+          <div class="p-3 text-center">
+            <p class="small text-muted mb-2" id="supportCallHint">لو مستعجل وعايز تواصل أسرع اتصل على هذا الرقم</p>
+            <div class="fs-4 fw-bold mb-3" id="supportCallPhone">—</div>
+            <a href="#" class="btn btn-success btn-sm" id="supportCallTelBtn"><i class="fas fa-phone me-1"></i>اتصال الآن</a>
+          </div>
+        </div>
+        <div class="d-flex flex-column gap-2 align-items-center">
+          <button type="button" id="supportToggleBtn" class="support-fab-circle" title="الدعم">
+            <i class="fas fa-headset"></i>
+            <span id="supportBadge" class="support-badge-dot d-none"></span>
+          </button>
+          <span class="support-fab-label small">الدعم</span>
+          <button type="button" id="supportCallToggleBtn" class="support-fab-circle support-fab-call" title="الاتصال">
+            <i class="fas fa-phone-alt"></i>
+          </button>
+          <span class="support-fab-label small">الاتصال</span>
+        </div>
       </div>
     `);
     fab = document.getElementById('supportFab');
@@ -1295,11 +1314,46 @@ function initSupportWidget(user) {
   const closePanel = () => {
     supportOpen = false;
     panel.classList.remove('open');
-    stopSupportListener();
+    stopSupportListener(); // إيقاف onSnapshot فوراً — صفر قراءات بعد الإغلاق
+    if (user) checkSupportBadgeOnce(user);
   };
 
-  if (toggleBtn) toggleBtn.onclick = () => { if (supportOpen) closePanel(); else openPanel(); };
+  if (toggleBtn) toggleBtn.onclick = () => {
+    document.getElementById('supportCallPanel')?.classList.remove('open');
+    if (supportOpen) closePanel(); else openPanel();
+  };
   if (closeBtn) closeBtn.onclick = closePanel;
+
+  const callPanel = document.getElementById('supportCallPanel');
+  const callToggle = document.getElementById('supportCallToggleBtn');
+  const callClose = document.getElementById('supportCallCloseBtn');
+  async function openCallPanel() {
+    closePanel();
+    if (!callPanel) return;
+    callPanel.classList.add('open');
+    try {
+      const { data } = await softFetch('settings:siteMessages', async () => {
+        const snap = await getDoc(doc(db, 'settings', 'siteMessages'));
+        return snap.exists() ? snap.data() : {};
+      }, { sessionFlag: 'soft:siteMessages', maxAgeMs: 5 * 60 * 1000 });
+      const phone = (data?.supportPhone || data?.devPhone || '').trim();
+      const hint = data?.supportPhoneHint || 'لو مستعجل وعايز تواصل أسرع اتصل على هذا الرقم';
+      const hintEl = document.getElementById('supportCallHint');
+      const phoneEl = document.getElementById('supportCallPhone');
+      const telBtn = document.getElementById('supportCallTelBtn');
+      if (hintEl) hintEl.textContent = hint;
+      if (phoneEl) phoneEl.textContent = phone || 'غير متوفر حالياً';
+      if (telBtn) {
+        if (phone) { telBtn.href = 'tel:' + phone.replace(/\s/g, ''); telBtn.classList.remove('disabled'); }
+        else { telBtn.href = '#'; telBtn.classList.add('disabled'); }
+      }
+    } catch (_) {}
+  }
+  if (callToggle) callToggle.onclick = () => {
+    if (callPanel?.classList.contains('open')) callPanel.classList.remove('open');
+    else openCallPanel();
+  };
+  if (callClose) callClose.onclick = () => callPanel?.classList.remove('open');
 
   document.getElementById('supportSendBtn')?.addEventListener('click', () => sendSupportMsg(user));
   document.getElementById('supportInput')?.addEventListener('keydown', (e) => {
@@ -1313,21 +1367,45 @@ function initSupportWidget(user) {
 }
 
 let supportBadgeUnsub = null;
-function startSupportBadgeWatcher(user) {
-  if (supportBadgeUnsub) { try { supportBadgeUnsub(); } catch(_){} supportBadgeUnsub = null; }
-  if (!user) return;
+let _supportBadgeTimer = null;
+let _supportBadgeUser = null;
+
+/** شارة الدعم: قراءة واحدة فقط — بدون onSnapshot دائم (يقلل الاتصالات النشطة) */
+async function checkSupportBadgeOnce(user) {
+  if (!user || supportOpen) return;
   try {
-    const q = query(collection(db, 'supportChats'), where('userId', '==', user.uid), limit(40));
-    supportBadgeUnsub = onSnapshot(q, (snap) => {
-      if (supportOpen) {
-        window._clearSupportBadges?.();
-        return;
-      }
-      const hasUnread = snap.docs.some(d => d.data().sender === 'admin' && !d.data().read);
-      if (hasUnread) window._showSupportBadges?.();
-      else window._clearSupportBadges?.();
-    }, () => {});
+    const { data } = await softFetch('supportBadge:' + user.uid, async () => {
+      const snap = await getDocs(query(
+        collection(db, 'supportChats'),
+        where('userId', '==', user.uid),
+        limit(20)
+      ));
+      return snap.docs.some(d => d.data().sender === 'admin' && !d.data().read);
+    }, { sessionFlag: 'soft:supportBadge:' + user.uid, maxAgeMs: 3 * 60 * 1000 });
+    if (data) window._showSupportBadges?.();
+    else window._clearSupportBadges?.();
   } catch (_) {}
+}
+
+function stopSupportBadgeWatcher() {
+  if (supportBadgeUnsub) { try { supportBadgeUnsub(); } catch(_){} supportBadgeUnsub = null; }
+  if (_supportBadgeTimer) { clearInterval(_supportBadgeTimer); _supportBadgeTimer = null; }
+  _supportBadgeUser = null;
+}
+
+function startSupportBadgeWatcher(user) {
+  stopSupportBadgeWatcher();
+  if (!user) return;
+  _supportBadgeUser = user;
+  // قراءة واحدة عند الدخول — مش مستمع حي
+  checkSupportBadgeOnce(user);
+  // فحص نادر جداً فقط والصفحة ظاهرة (كل 8 دقائق) — صفر onSnapshot
+  _supportBadgeTimer = setInterval(() => {
+    if (document.hidden || supportOpen || !_supportBadgeUser) return;
+    // امسح كاش الجلسة عشان يعيد التحقق من الشبكة مرة كل فترة
+    try { sessionStorage.removeItem('soft:supportBadge:' + _supportBadgeUser.uid); } catch(_){}
+    checkSupportBadgeOnce(_supportBadgeUser);
+  }, 8 * 60 * 1000);
 }
 
 function renderSupportSnap(snap) {
@@ -1390,6 +1468,24 @@ function stopSupportListener() {
     supportUnsub = null;
   }
 }
+
+// إيقاف كل مستمعات الدعم عند إخفاء التبويب أو مغادرة الصفحة
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    if (supportOpen) {
+      // الشات مفتوح لكن التبويب مخفي → أوقف المستمع الحي فوراً
+      stopSupportListener();
+    }
+  } else if (supportOpen && currentUser) {
+    // رجع التبويب والشات لسه مفتوح → أعد المستمع
+    startSupportListener(currentUser);
+  }
+});
+window.addEventListener('pagehide', () => {
+  stopSupportListener();
+  stopSupportBadgeWatcher();
+});
+
 
 async function sendSupportMsg(user) {
   const input = document.getElementById('supportInput');

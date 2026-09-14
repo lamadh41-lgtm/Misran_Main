@@ -71,6 +71,17 @@ img { max-width: 100%; height: auto; }
   box-shadow: 0 4px 20px rgba(26,20,16,0.04);
   padding: 0.65rem 0;
   min-height: var(--nav-h);
+  z-index: 1100 !important; /* فوق الفلاتر والقوائم */
+  position: relative;
+}
+.navbar-custom.sticky-top {
+  z-index: 1100 !important;
+}
+/* قوائم الحساب والإشعارات فوق أي sticky (فلاتر المشاريع) */
+.navbar-custom .dropdown-menu,
+#authArea .dropdown-menu,
+.dropdown-menu.show {
+  z-index: 1200 !important;
 }
 .navbar-brand {
   font-weight: 800;
@@ -416,6 +427,10 @@ img { max-width: 100%; height: auto; }
   border: 1px solid var(--line) !important;
   border-radius: var(--radius);
   box-shadow: var(--shadow);
+  z-index: 100 !important; /* تحت النافبار والقوائم المنسدلة */
+}
+#projectsFilterBar.sticky-top {
+  z-index: 100 !important;
 }
 #projectsFilterBar .card-body { padding: 1.15rem; }
 #projectsFilterBar h6 {
@@ -718,3 +733,25 @@ footer h5, footer h6 { color: var(--gold-soft); font-weight: 800; }
 
 /* إخفاء زر الدعم القديم العريض إن وُجد */
 .support-toggle-btn:not(.support-fab-circle) { display: none !important; }
+
+/* زر الاتصال + تسميات الدعم */
+.support-fab-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+  line-height: 1;
+  margin-top: -0.25rem;
+  margin-bottom: 0.15rem;
+}
+.support-fab-call {
+  background: linear-gradient(145deg, #2d8a4e, #1b5e34) !important;
+  color: #fff !important;
+}
+.support-call-panel {
+  bottom: 8.5rem;
+}
+.support-call-panel.open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}

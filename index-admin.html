@@ -33,11 +33,12 @@
       <div class="col-md-2 p-0">
         <div class="admin-sidebar">
           <nav class="nav flex-column admin-nav-groups">
-            <a class="nav-link" href="#" data-section="adminProfile" data-role="general"><i class="fas fa-user-cog me-2"></i>الملف والحساب</a>
+            <a class="nav-link" href="#" data-section="adminProfile" data-role="general"><i class="fas fa-sitemap me-2"></i>الجذر الأساسي</a>
             <div class="sidebar-group-title">عام</div>
             <a class="nav-link active" href="#" data-section="dashboard" data-role="general"><i class="fas fa-tachometer-alt me-2"></i>لوحة التحكم</a>
             <a class="nav-link" href="#" data-section="support" data-role="users"><i class="fas fa-headset me-2"></i>الدعم <span class="badge bg-danger nav-badge d-none" id="badge-support">0</span></a>
             <a class="nav-link" href="#" data-section="news" data-role="general"><i class="fas fa-bullhorn me-2"></i>الأخبار</a>
+            <a class="nav-link" href="#" data-section="promoContent" data-role="general"><i class="fas fa-play-circle me-2"></i>المحتوى والقوائم</a>
             <div class="sidebar-group-title">المستخدمون</div>
             <a class="nav-link" href="#" data-section="users" data-role="users"><i class="fas fa-users me-2"></i>المستخدمون</a>
             <a class="nav-link" href="#" data-section="banned" data-role="users"><i class="fas fa-ban me-2"></i>محظورون / محذوفون</a>
@@ -65,9 +66,18 @@
       </div>
       <div class="col-md-10 p-4">
         <!-- Official profile -->
-        <div id="section-adminProfile" class="admin-section d-none">
-          <h3 class="mb-3"><i class="fas fa-user-cog me-2"></i>الملف والحساب</h3>
+                <div id="section-adminProfile" class="admin-section d-none">
+          <h3 class="mb-3"><i class="fas fa-sitemap me-2"></i>الجذر الأساسي</h3>
+          <ul class="nav nav-pills mb-4 flex-wrap gap-2" id="rootSettingsTabs">
+            <li class="nav-item"><button type="button" class="nav-link active" data-root-tab="official">حساب المحرك</button></li>
+            <li class="nav-item"><button type="button" class="nav-link" data-root-tab="topup">شحن الرصيد</button></li>
+            <li class="nav-item"><button type="button" class="nav-link" data-root-tab="engine">حزمة المحرك</button></li>
+            <li class="nav-item"><button type="button" class="nav-link" data-root-tab="brand">العلامة التجارية</button></li>
+            <li class="nav-item"><button type="button" class="nav-link" data-root-tab="support">الدعم والاتصال</button></li>
+            <li class="nav-item"><button type="button" class="nav-link" data-root-tab="commission">عمولة المستخدمين</button></li>
+          </ul>
 
+          <div id="root-tab-official" class="root-tab-pane">
           <div class="card border-0 shadow-sm mb-4">
             <div class="card-body">
               <h5 class="mb-3">حساب المحرك (الظهور للناس)</h5>
@@ -94,7 +104,9 @@
               <div id="officialProfileMsg" class="small text-muted mt-2"></div>
             </div>
           </div>
+          </div>
 
+          <div id="root-tab-topup" class="root-tab-pane d-none">
           <div class="card border-0 shadow-sm mb-4">
             <div class="card-body">
               <h5 class="mb-2">رسالة شحن الرصيد</h5>
@@ -104,7 +116,90 @@
               <span id="topupMessageSaveMsg" class="small ms-2 text-muted"></span>
             </div>
           </div>
+          </div>
 
+          <div id="root-tab-engine" class="root-tab-pane d-none">
+          <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+              <h5 class="mb-3"><i class="fas fa-box-open me-2"></i>حزمة المحرك (للتحميل)</h5>
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <label class="form-label">اسم المحرك</label>
+                  <input type="text" class="form-control" id="engineNameInput" placeholder="محرك مصران">
+                </div>
+                <div class="col-md-2">
+                  <label class="form-label">الإصدار</label>
+                  <input type="text" class="form-control" id="engineVersionInput" placeholder="1.0.0">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">الوصف</label>
+                  <input type="text" class="form-control" id="engineDescInput" placeholder="وصف مختصر يظهر في صفحة التحميل">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">ملف المحرك (ZIP أو غيره)</label>
+                  <input type="file" class="form-control" id="engineFileInput">
+                  <div class="form-text" id="engineFileHint">لم يُرفع ملف بعد</div>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">صور توضيحية (اختياري)</label>
+                  <input type="file" class="form-control" id="engineImagesInput" accept="image/*" multiple>
+                  <div id="engineImagesPreview" class="d-flex flex-wrap gap-2 mt-2"></div>
+                </div>
+              </div>
+              <button type="button" class="btn btn-primary mt-3" id="saveEnginePackageBtn"><i class="fas fa-save me-1"></i>حفظ حزمة المحرك</button>
+              <div id="enginePackageMsg" class="small text-muted mt-2"></div>
+            </div>
+          </div>
+          </div>
+
+          <div id="root-tab-brand" class="root-tab-pane d-none">
+          <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+              <h5 class="mb-3"><i class="fas fa-trademark me-2"></i>العلامة التجارية للموقع</h5>
+              <p class="small text-muted">اسم الموقع يظهر في الشريط العلوي وزر المتجر. اللوجو يظهر بجانب الاسم وفي تبويب المتصفح.</p>
+              <div class="row g-3 align-items-end">
+                <div class="col-md-5">
+                  <label class="form-label">اسم الموقع</label>
+                  <input type="text" class="form-control" id="siteNameInput" placeholder="محرك مصران">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">لوجو الموقع</label>
+                  <input type="file" class="form-control" id="siteLogoInput" accept="image/*">
+                </div>
+                <div class="col-md-3">
+                  <div id="siteLogoPreview" class="rounded border d-flex align-items-center justify-content-center bg-light" style="width:72px;height:72px;overflow:hidden;">—</div>
+                </div>
+              </div>
+              <button type="button" class="btn btn-outline-primary mt-3" id="saveSiteBrandingBtn"><i class="fas fa-save me-1"></i>حفظ الاسم واللوجو</button>
+              <div id="siteBrandingMsg" class="small text-muted mt-2"></div>
+            </div>
+          </div>
+          </div>
+
+          <div id="root-tab-support" class="root-tab-pane d-none">
+          <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+              <h5 class="mb-3"><i class="fas fa-phone-alt me-2"></i>رقم الاتصال السريع (الدعم)</h5>
+              <p class="small text-muted">يظهر للمستخدم عند الضغط على «الاتصال» — للتواصل العاجل خارج الشات.</p>
+              <div class="row g-2 align-items-end">
+                <div class="col-md-6">
+                  <label class="form-label">رقم التليفون *</label>
+                  <input type="text" class="form-control" id="supportPhoneInput" placeholder="مثال: 01xxxxxxxxx" dir="ltr">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">نص توضيحي (اختياري)</label>
+                  <input type="text" class="form-control" id="supportPhoneHintInput" placeholder="لو مستعجل اتصل على هذا الرقم">
+                </div>
+                <div class="col-md-2">
+                  <button type="button" class="btn btn-success w-100" id="saveSupportPhoneBtn"><i class="fas fa-save me-1"></i>حفظ</button>
+                </div>
+              </div>
+              <div id="supportPhoneSaveMsg" class="small text-muted mt-2"></div>
+            </div>
+          </div>
+          </div>
+
+          <div id="root-tab-commission" class="root-tab-pane d-none">
           <div class="card border-0 shadow-sm mb-4">
             <div class="card-body">
               <h5 class="mb-2">تعديل عمولة مستخدم</h5>
@@ -131,9 +226,10 @@
               <div id="commUserHint" class="small text-muted mt-2"></div>
             </div>
           </div>
+          </div>
         </div>
 
-        <!-- Dashboard -->
+<!-- Dashboard -->
         <div id="section-dashboard" class="admin-section">
           <h3 class="mb-2">لوحة التحكم</h3>
           <p class="mb-3" id="fbConnStatus"><span class="text-muted">جاري التحقق من الاتصال...</span></p>
@@ -371,6 +467,94 @@
         </div>
 
         <!-- ID Lookup -->
+        
+        <div id="section-promoContent" class="admin-section d-none">
+          <h3 class="mb-3"><i class="fas fa-play-circle me-2"></i>المحتوى والقوائم</h3>
+
+          <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+              <h5 class="mb-3" id="promoFormTitle">إضافة محتوى</h5>
+              <input type="hidden" id="promoEditId" value="">
+              <div class="row g-3">
+                <div class="col-md-3">
+                  <label class="form-label">النوع</label>
+                  <select class="form-select" id="promoType">
+                    <option value="youtube">يوتيوب</option>
+                    <option value="facebook">فيسبوك</option>
+                  </select>
+                </div>
+                <div class="col-md-5">
+                  <label class="form-label">العنوان *</label>
+                  <input type="text" class="form-control" id="promoTitle" placeholder="اسم الفيديو">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">رابط الفيديو *</label>
+                  <input type="url" class="form-control" id="promoVideoUrl" placeholder="https://..." dir="ltr">
+                </div>
+                <div class="col-12">
+                  <label class="form-label">الوصف</label>
+                  <textarea class="form-control" id="promoDesc" rows="2"></textarea>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">صورة مصغّرة</label>
+                  <input type="file" class="form-control" id="promoThumb" accept="image/*">
+                  <div id="promoThumbCropPreview" class="mt-2"></div>
+                </div>
+              </div>
+              <div class="mt-3 d-flex flex-wrap gap-2">
+                <button type="button" class="btn btn-primary" id="promoAddBtn"><i class="fas fa-plus me-1"></i>إضافة</button>
+                <button type="button" class="btn btn-success d-none" id="promoUpdateBtn"><i class="fas fa-save me-1"></i>حفظ التعديل</button>
+                <button type="button" class="btn btn-outline-secondary d-none" id="promoCancelEditBtn">إلغاء التعديل</button>
+                <button type="button" class="btn btn-outline-primary" id="promoRefreshBtn"><i class="fas fa-sync me-1"></i>تحديث القائمة</button>
+              </div>
+              <div id="promoAddMsg" class="small text-muted mt-2"></div>
+            </div>
+          </div>
+
+          <h5 class="mb-2">المحتوى المرفوع</h5>
+          <input type="search" class="form-control mb-3" id="promoSearch" placeholder="بحث بالعنوان أو ID...">
+          <div class="row g-3" id="promoAdminList"></div>
+          <div class="d-flex justify-content-center gap-2 mt-3" id="promoPager"></div>
+
+          <hr class="my-4">
+
+          <div class="card border-0 shadow-sm">
+            <div class="card-body">
+              <h5 class="mb-3"><i class="fas fa-list me-2"></i>قوائم التشغيل (يوتيوب)</h5>
+              <p class="small text-muted">حذف قائمة أو إزالة فيديو من القائمة <strong>لا يحذف</strong> الفيديو من قسم المحتوى — يُزال من القائمة فقط.</p>
+              <div class="row g-2 align-items-end mb-3">
+                <div class="col-md-5">
+                  <label class="form-label">اسم قائمة جديدة</label>
+                  <input type="text" class="form-control" id="playlistNameInput" placeholder="مثال: شروحات المحرك">
+                </div>
+                <div class="col-md-3">
+                  <button type="button" class="btn btn-primary w-100" id="playlistCreateBtn"><i class="fas fa-plus me-1"></i>إنشاء قائمة</button>
+                </div>
+              </div>
+              <div class="row g-2 align-items-end mb-3">
+                <div class="col-md-4">
+                  <label class="form-label">اختر قائمة</label>
+                  <select class="form-select" id="playlistSelect"><option value="">— اختر قائمة —</option></select>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">أضف فيديو يوتيوب للقائمة</label>
+                  <select class="form-select" id="playlistVideoSelect"><option value="">— اختر فيديو —</option></select>
+                </div>
+                <div class="col-md-2">
+                  <button type="button" class="btn btn-success w-100" id="playlistAddVideoBtn">إضافة للقائمة</button>
+                </div>
+                <div class="col-md-2">
+                  <button type="button" class="btn btn-outline-danger w-100" id="playlistDeleteBtn">حذف القائمة</button>
+                </div>
+              </div>
+              <div id="playlistItemsBox" class="border rounded p-2 bg-light" style="min-height:60px;">
+                <span class="text-muted">اختر قائمة لعرض فيديوهاتها</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
         <div id="section-idLookup" class="admin-section d-none">
           <h3 class="mb-4">بحث بالـ ID</h3>
           <div class="card shadow-sm">
