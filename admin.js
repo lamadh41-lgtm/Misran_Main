@@ -80,6 +80,18 @@ function gateAdminAccess() {
       const lbl = document.getElementById('adminUserLabel');
       if (lbl) lbl.textContent = (currentAdminData.name || user.email) + (currentAdminRoles._owner ? ' (المالك)' : ' (إداري)');
       applyAdminNavVisibility(currentAdminRoles);
+      // اتصال فوري عند دخول لوحة الأدمن (بدون انتظار ضغط قسم)
+      try {
+        const connEl = document.getElementById('fbConnStatus');
+        if (connEl) {
+          connEl.innerHTML = '<span class="text-success"><i class="fas fa-check-circle me-1"></i>متصل بـ Firebase بنجاح</span>';
+        }
+        // لوحة التحكم ظاهرة افتراضياً — حمّل الإحصائيات فوراً
+        const dash = document.getElementById('section-dashboard');
+        if (dash && !dash.classList.contains('d-none')) {
+          setTimeout(() => { try { loadStats(); } catch (_) {} }, 50);
+        }
+      } catch (_) {}
       resolve(true);
     });
   });
@@ -2569,7 +2581,7 @@ document.getElementById('testDriveBtn')?.addEventListener('click', async () => {
       showToast(data.error || 'فشل', 'error');
     }
   } catch (e) {
-    if (msg) msg.innerHTML = `<div class="alert alert-danger">فشل الاتصال: ${e.message}<br>تأكد من Who has access = Anyone بعد New version، وافتح الأدمن من http://localhost مش file://</div>`;
+    if (msg) msg.innerHTML = `<div class="alert alert-danger">فشل الاتصال: ${e.message}<br>تأكد من Who has access = Anyone بعد New version، ولا تفتح الملف كـ file://</div>`;
     showToast(e.message, 'error');
   }
 });
@@ -2943,13 +2955,13 @@ async function adminUploadToDrive(file, meta = {}) {
     xhr.setRequestHeader('Content-Type', 'text/plain;charset=utf-8');
     xhr.timeout = 120000;
     xhr.onload = () => resolve(xhr.responseText || '');
-    xhr.onerror = () => reject(new Error('فشل الاتصال بسكربت الدرايف'));
-    xhr.ontimeout = () => reject(new Error('انتهت مهلة الرفع'));
+    xhr.onerror = () => reject(new Error('تم فشل رفع الملف'));
+    xhr.ontimeout = () => reject(new Error('تم فشل رفع الملف'));
     xhr.send(payload);
   });
   let data;
-  try { data = JSON.parse(text); } catch { throw new Error('رد غير متوقع من السكربت'); }
-  if (!data.ok) throw new Error(data.error || 'فشل الرفع');
+  try { data = JSON.parse(text); } catch { throw new Error('تم فشل رفع الملف — رد غير صالح من السكربت'); }
+  if (!data.ok) throw new Error(data.error || 'تم فشل رفع الملف');
   return data;
 }
 

@@ -2,7 +2,7 @@
   سكربت Google Apps Script — محرك مصران
   بدون كلمة سر إلزامية (SECRET فاضي)
 --------------------------------------------------------------------------------
-  SCRIPT_VERSION = 6
+  SCRIPT_VERSION = 7
 
   قاعدة الإصدار (إلزامية):
   - أي تحديث أو تعديل على هذا الملف يجب زيادة SCRIPT_VERSION بمقدار 1.
@@ -36,7 +36,7 @@
 const FOLDER_ID = '1r_pMH_KZH-YlrllbqK0CbMvew00BhGqG';
 const SECRET = ''; // اختياري — اتركه فاضي
 const MAX_BYTES = 15 * 1024 * 1024;
-const SCRIPT_VERSION = 6;
+const SCRIPT_VERSION = 7;
 
 function doPost(e) {
   try {
@@ -111,6 +111,16 @@ function doPost(e) {
     const kind = String(data.folderKind || 'files');
     const fileName = safeName_(data.fileName || 'file');
     const mime = data.mimeType || 'application/octet-stream';
+
+    // أمان بسيط لملفات المشاريع: امتدادات مضغوطة فقط في مجلد الملفات
+    if (kind === 'files' || kind === 'الملفات') {
+      const lower = String(fileName).toLowerCase();
+      const allowed = ['.zip', '.rar', '.7z', '.tar', '.gz', '.tgz'];
+      const okExt = allowed.some(ext => lower.endsWith(ext));
+      if (!okExt) {
+        return json_({ ok: false, error: 'مسموح فقط بملفات مضغوطة (ZIP/RAR/7Z...)' });
+      }
+    }
 
     const root = DriveApp.getFolderById(FOLDER_ID);
     const userFolder = getOrCreateFolder_(root, userKey);

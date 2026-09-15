@@ -456,6 +456,9 @@ img { max-width: 100%; height: auto; }
   border-color: var(--gold);
   box-shadow: 0 0 0 3px rgba(201,162,39,0.18);
 }
+/* مودالات فوق النافبار (النافبار z-index 1100) — منع تداخل الشريط العلوي */
+.modal { z-index: 2000 !important; }
+.modal-backdrop { z-index: 1990 !important; }
 .modal-content {
   border: 1px solid var(--line);
   border-radius: var(--radius);

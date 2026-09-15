@@ -38,19 +38,11 @@
       <li class="nav-item">
         <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#received">المستلمة</button>
       </li>
-      <li class="nav-item">
-        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#pending">قيد المراجعة (Pending)</button>
-      </li>
     </ul>
 
     <div class="tab-content">
       <div class="tab-pane fade show active" id="received">
         <div id="receivedList" class="row g-3">
-          <div class="col-12 text-center text-muted py-4">جاري التحميل...</div>
-        </div>
-      </div>
-      <div class="tab-pane fade" id="pending">
-        <div id="pendingList" class="row g-3">
           <div class="col-12 text-center text-muted py-4">جاري التحميل...</div>
         </div>
       </div>
@@ -103,9 +95,7 @@
       }
       const allBuy = { docs: allBuyDocs.map(x => ({ id: x.id, data: () => x.data })) };
       const receivedDocs = allBuy.docs.filter(d => ['approved', 'owned_free'].includes(d.data().status));
-      const pendingDocs = allBuy.docs.filter(d => ['pending', 'rejected'].includes(d.data().status));
       const receivedEl = document.getElementById('receivedList');
-      const pendingEl = document.getElementById('pendingList');
 
       if (receivedDocs.length === 0) {
         receivedEl.innerHTML = '<div class="col-12 text-center text-muted py-4">لا توجد مشتريات مستلمة بعد</div>';
@@ -148,34 +138,6 @@
             </div>`;
         }
         receivedEl.innerHTML = html;
-      }
-
-      if (pendingDocs.length === 0) {
-        pendingEl.innerHTML = '<div class="col-12 text-center text-muted py-4">لا توجد طلبات قيد المراجعة</div>';
-      } else {
-        pendingEl.innerHTML = pendingDocs.map(d => {
-          const p = d.data();
-          const snap = p.snapshot || {};
-          const img = thumbUrl(snap, null);
-          const statusBadge = p.status === 'pending'
-            ? '<span class="badge bg-warning text-dark">قيد المراجعة</span>'
-            : '<span class="badge bg-danger">مرفوض</span>';
-          let extra = '';
-          if (p.status === 'rejected') {
-            extra = `<p class="text-danger small mt-2">السبب: ${p.rejectionReason || 'غير محدد'}</p>`;
-          }
-          return `
-            <div class="col-md-6 col-lg-4">
-              <div class="card h-100 shadow-sm">
-                <img src="${img}" class="card-img-top" style="height:140px;object-fit:cover;" onerror="this.src='https://via.placeholder.com/400x180?text=Project'">
-                <div class="card-body">
-                  <h6>${snap.title || p.projectTitle || '-'}</h6>
-                  <p class="mb-1">المبلغ: ${p.amount || 0} ج.م ${statusBadge}</p>
-                  ${extra}
-                </div>
-              </div>
-            </div>`;
-        }).join('');
       }
     });
   </script>

@@ -1040,7 +1040,13 @@ async function saveProjectWithStatus(status, successMsg) {
     if (pf) pf.style.display = 'none';
   } catch (err) {
     console.error(err);
-    showToast('حدث خطأ: ' + err.message, 'error');
+    const msg = (err && err.message) ? String(err.message) : '';
+    // رسالة فشل الرفع فقط كما طُلب — بدون localhost أو تفاصيل تقنية للمستخدم
+    if (/فشل|تم فشل|timeout|network|سكربت|drive|رفع/i.test(msg)) {
+      showToast('تم فشل رفع المشروع', 'error');
+    } else {
+      showToast(msg || 'تم فشل رفع المشروع', 'error');
+    }
   } finally {
     isPublishing = false;
     showLoading(false);
@@ -1661,10 +1667,8 @@ async function uploadToDriveScript(file, onProgress, meta = {}) {
         if (progressCb) progressCb(80);
         resolve(xhr.responseText || '');
       };
-      xhr.onerror = () => reject(new Error(
-        'فشل الاتصال بسكربت الدرايف. جرّب: Chrome بدون إضافات، ومن localhost، وتأكد أن Who has access = Anyone بعد New version.'
-      ));
-      xhr.ontimeout = () => reject(new Error('انتهت مهلة الرفع — جرب ملف أصغر'));
+      xhr.onerror = () => reject(new Error('تم فشل رفع المشروع'));
+      xhr.ontimeout = () => reject(new Error('تم فشل رفع المشروع'));
       xhr.send(payload);
     } catch (e) {
       reject(e);
@@ -1673,9 +1677,9 @@ async function uploadToDriveScript(file, onProgress, meta = {}) {
 
   let data;
   try { data = JSON.parse(text); } catch {
-    throw new Error('رد غير متوقع من السكربت. تأكد من النشر Anyone. جزء من الرد: ' + String(text).slice(0, 100));
+    throw new Error('تم فشل رفع المشروع');
   }
-  if (!data.ok) throw new Error(data.error || 'فشل الرفع');
+  if (!data.ok) throw new Error(data.error || 'تم فشل رفع المشروع');
   if (progressCb) progressCb(100);
   return data;
 }
