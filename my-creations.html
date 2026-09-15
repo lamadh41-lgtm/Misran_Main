@@ -174,19 +174,29 @@
       const list = document.getElementById('creationsList');
       list.innerHTML = '<div class="col-12 text-center py-4"><div class="spinner-border text-primary"></div></div>';
       try {
-        let snap;
+        // الشبكة أصل — المحلي تابع فقط (لا نعتمد على كاش قديم يمنع ظهور المشاريع الجديدة)
         const mk = 'myProjects:' + currentUser.uid;
-        const mc = window.localCache?.get(mk);
-        if (Array.isArray(mc) && mc.length) {
-          snap = { docs: mc.map(x => ({ id: x.id, data: () => x.data })) };
-        } else {
-          snap = await getDocs(query(collection(db, 'projects'), where('sellerId', '==', currentUser.uid), limit(80)));
-          try { window.localCache?.set(mk, snap.docs.map(d => ({ id: d.id, data: d.data() }))); } catch(_){}
+        let rows = [];
+        try {
+          const snap = await getDocs(query(collection(db, 'projects'), where('sellerId', '==', currentUser.uid), limit(80)));
+          rows = snap.docs.map(d => ({ id: d.id, data: d.data() }));
+          try { window.localCache?.set(mk, rows); } catch (_) {}
+        } catch (netErr) {
+          // عند فشل الشبكة فقط: اعرض الكاش كاحتياطي
+          const mc = window.localCache?.get(mk);
+          if (Array.isArray(mc) && mc.length) {
+            rows = mc.map(x => ({ id: x.id, data: x.data || x }));
+          } else {
+            throw netErr;
+          }
         }
-        allMyProjects = snap.docs
-          .filter(d => d.data().status !== 'deleted')
-          .map(d => ({ id: d.id, ...d.data() }))
-          .sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
+        allMyProjects = rows
+          .filter(r => (r.data?.status || r.status) !== 'deleted')
+          .map(r => {
+            const d = r.data || r;
+            return { id: r.id, ...d };
+          })
+          .sort((a, b) => (b.createdAt?.toMillis?.() || b.createdAt?.__ts || 0) - (a.createdAt?.toMillis?.() || a.createdAt?.__ts || 0));
         renderList();
       } catch (e) {
         list.innerHTML = `<div class="col-12 alert alert-danger">${e.message}</div>`;

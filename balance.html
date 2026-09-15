@@ -85,14 +85,22 @@
     let pendingAmount = 0;
 
     async function refresh() {
-      let uData = window.localCache?.get('user:' + currentUser.uid);
-      let u;
-      if (uData) { u = { exists: () => true, data: () => uData }; }
-      else {
-        u = await getDoc(doc(db, 'users', currentUser.uid));
-        if (u.exists()) try { window.localCache?.set('user:' + currentUser.uid, u.data()); } catch(_){}
+      // الشبكة أصل — الرصيد والكاش المحلي تابعان فقط
+      let bal = 0;
+      try {
+        const u = await getDoc(doc(db, 'users', currentUser.uid));
+        if (u.exists()) {
+          const data = u.data();
+          bal = parseFloat(data.balance) || 0;
+          try { window.localCache?.set('user:' + currentUser.uid, data); } catch (_) {}
+          // امسح علم softFetch عشان الصفحة الجاية ما تعتمدش على كاش قديم
+          try { sessionStorage.removeItem('soft:user:' + currentUser.uid); } catch (_) {}
+        }
+      } catch (netErr) {
+        const uData = window.localCache?.get('user:' + currentUser.uid);
+        if (uData) bal = parseFloat(uData.balance) || 0;
+        else throw netErr;
       }
-      const bal = u.exists() ? (parseFloat(u.data().balance) || 0) : 0;
       document.getElementById('balValue').textContent = bal.toFixed(2);
 
       const snap = await getDocs(query(collection(db, 'topups'), where('userId', '==', currentUser.uid), limit(40)));

@@ -470,6 +470,7 @@ async function loadOrders() {
             userId: uid, title: 'تم شحن رصيدك', body: `تم قبول شحن ${amount} ج.م. رصيدك الآن ${bal} ج.م`,
             type: 'topup_approved', read: false, createdAt: serverTimestamp()
           });
+          try { networkInvalidate('user:' + uid, 'users:'); } catch (_) {}
           showToast('تم قبول الشحن');
           loadOrders();
         } catch(e){ showToast('خطأ: ' + e.message, 'error'); }

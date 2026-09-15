@@ -1025,9 +1025,9 @@ async function saveProjectWithStatus(status, successMsg) {
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp()
     });
-    // أبطل كاش قائمة المشاريع عشان الزيارة الجاية تجيب الجديد (قراءة واحدة)
-    try { networkInvalidate('projects:', 'product:'); } catch(_){}
-    try { window.localCache?.invalidate?.('projects:', 'product:'); } catch(_){}
+    // أبطل كاش المشاريع + إبداعاتي (الشبكة أصل — المحلي تابع)
+    try { networkInvalidate('projects:', 'product:', 'myProjects:'); } catch(_){}
+    try { window.localCache?.invalidate?.('projects:', 'product:', 'myProjects:'); } catch(_){}
     showToast(successMsg);
     bootstrap.Modal.getInstance(document.getElementById('uploadModal'))?.hide();
     document.getElementById('uploadForm')?.reset();
